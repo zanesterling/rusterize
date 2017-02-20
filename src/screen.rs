@@ -36,6 +36,26 @@ impl<'a> Screen<'a> {
         })
     }
 
+    pub fn set_pixel(&mut self, x: usize, y: usize, color: Pixel) {
+        if self.w < x || self.h < y { return; }
+        self.pixels[y * self.w + x] = color;
+    }
+
+    pub fn set_pixel_nocheck(
+        &mut self,
+        x: usize,
+        y: usize,
+        color: Pixel
+    ) {
+        self.pixels[y * self.w + x] = color;
+    }
+
+    pub fn clear(&mut self) {
+        for i in 0..self.pixels.len() {
+            self.pixels[i] = pixel::BLACK;
+        }
+    }
+
     pub fn display(&mut self) {
         // TODO: Draw pixels to renderer.
         self.renderer.present();
@@ -43,12 +63,6 @@ impl<'a> Screen<'a> {
 
     pub fn display_text(&self) {
         println!("{}", self);
-    }
-
-    pub fn clear(&mut self) {
-        for i in 0..self.pixels.len() {
-            self.pixels[i] = pixel::BLACK;
-        }
     }
 }
 
