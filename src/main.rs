@@ -9,6 +9,7 @@ use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 
+mod pixel;
 mod screen;
 
 use screen::Screen;
