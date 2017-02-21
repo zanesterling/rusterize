@@ -9,21 +9,21 @@ use pixel::Pixel;
 
 
 pub struct Screen<'a> {
-    w: usize,
-    h: usize,
+    w: u32,
+    h: u32,
     pixels: Vec<Pixel>,
 
     renderer: sdl2::render::Renderer<'a>,
 }
 
 impl<'a> Screen<'a> {
-    pub fn new(name: &str, w: usize, h: usize, sdl_context: &sdl2::Sdl)
+    pub fn new(name: &str, w: u32, h: u32, sdl_context: &sdl2::Sdl)
         -> Result<Screen<'a>, Box<error::Error>>
     {
         // Make an sdl2 window and get the renderer.
         let video_subsystem = sdl_context.video()?;
         let window = video_subsystem
-            .window(name, w as u32, h as u32)
+            .window(name, w, h)
             .position_centered()
             .opengl()
             .build()?;
@@ -32,23 +32,25 @@ impl<'a> Screen<'a> {
         Ok(Screen {
             w: w,
             h: h,
-            pixels: vec![pixel::BLACK; w * h],
+            pixels: vec![pixel::BLACK; (w * h) as usize],
             renderer: renderer,
         })
     }
 
-    pub fn set_pixel(&mut self, x: usize, y: usize, color: Pixel) {
+    pub fn set_pixel(&mut self, x: u32, y: u32, color: Pixel) {
         if self.w < x || self.h < y { return; }
-        self.pixels[y * self.w + x] = color;
+        let index = y as usize * self.w as usize + x as usize;
+        self.pixels[index] = color;
     }
 
     pub fn set_pixel_nocheck(
         &mut self,
-        x: usize,
-        y: usize,
+        x: u32,
+        y: u32,
         color: Pixel
     ) {
-        self.pixels[y * self.w + x] = color;
+        let index = y as usize * self.w as usize + x as usize;
+        self.pixels[index] = color;
     }
 
     pub fn clear(&mut self) {
@@ -70,11 +72,11 @@ impl<'a> Screen<'a> {
 impl<'a> Display for Screen<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // Draw top bar.
-        try!(write!(f, "{:-^1$}\n", "", self.w * 2 + 3));
+        try!(write!(f, "{:-^1$}\n", "", self.w as usize * 2 + 3));
 
         // Draw rows.
         self.pixels
-            .chunks(self.w)
+            .chunks(self.w as usize)
             .map(|row| {
                 try!(write!(f, "| "));
                 for p in row {
@@ -85,7 +87,7 @@ impl<'a> Display for Screen<'a> {
             }).collect::<Result<Vec<_>, fmt::Error>>()?;
 
         // Draw bottom bar.
-        try!(write!(f, "{:-^1$}\n", "", self.w * 2 + 3));
+        try!(write!(f, "{:-^1$}\n", "", self.w as usize * 2 + 3));
         Ok(())
     }
 }

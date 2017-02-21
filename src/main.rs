@@ -10,6 +10,7 @@ use std::time::Duration;
 use std::time::Instant;
 
 mod pixel;
+mod renderer;
 mod screen;
 
 use screen::Screen;
@@ -26,8 +27,8 @@ macro_rules! main_try {
 }
 
 
-const SCREEN_WIDTH:  usize = 800;
-const SCREEN_HEIGHT: usize = 600;
+const SCREEN_WIDTH:  u32 = 800;
+const SCREEN_HEIGHT: u32 = 600;
 
 const TARGET_FPS: u32 = 60;
 const FRAME_LEN_NANOS: u32 = 1_000_000_000 / (TARGET_FPS as u32);
