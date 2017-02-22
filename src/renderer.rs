@@ -34,11 +34,11 @@ impl<S> Renderer<S>
         let mut error: i64 = 0;
         let mut y = y1;
         for x in x1 .. x2 + 1 {
-            error += dy;
             if 2 * error > dx {
                 y += 1;
                 error -= dx;
             }
+            error += dy;
 
             self.texture.set_pixel(x, y, pixel::WHITE);
         }
