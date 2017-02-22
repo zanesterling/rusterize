@@ -13,6 +13,7 @@ mod pixel;
 mod renderer;
 mod screen;
 mod texture;
+mod types;
 
 use renderer::Renderer;
 
@@ -28,22 +29,22 @@ macro_rules! main_try {
 }
 
 
-const SCREEN_WIDTH:  u32 = 20;
-const SCREEN_HEIGHT: u32 = 20;
+const SCREEN_WIDTH:  u32 = 800;
+const SCREEN_HEIGHT: u32 = 600;
 
 const TARGET_FPS: u32 = 60;
 const FRAME_LEN_NANOS: u32 = 1_000_000_000 / (TARGET_FPS as u32);
 
 fn main() {
     // Initialize screen.
-    let screen = screen::TextScreen::new(
+    let sdl_context = sdl2::init().unwrap();
+    let screen = main_try!(screen::GraphicalScreen::new(
         "softraster",
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
-    );
+        &sdl_context,
+    ));
     let mut renderer = Renderer::new(screen);
-
-    let sdl_context = sdl2::init().unwrap();
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     // Main loop.
@@ -65,7 +66,7 @@ fn main() {
 
         // Draw stuff.
         renderer.clear();
-        renderer.draw_line(0, 0, 5, 3);
+        renderer.draw_line(50, 75, 620, 430);
         renderer.display();
 
         // Sleep until end-of-frame.
@@ -74,7 +75,6 @@ fn main() {
         if max_sleep > frame_duration {
             thread::sleep(max_sleep - frame_duration);
         }
-        break;
     }
 }
 

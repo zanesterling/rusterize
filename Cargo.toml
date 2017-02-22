@@ -4,4 +4,8 @@ version = "0.1.0"
 authors = ["Zane Sterling <sterling.zane@gmail.com>"]
 
 [dependencies]
-sdl2 = "0.29"
+
+[dependencies.sdl2]
+version = "0.29"
+default_features = false
+features = ["gfx"]

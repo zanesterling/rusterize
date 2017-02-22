@@ -1,6 +1,7 @@
 use pixel;
 use screen::Screen;
 use texture::Texture;
+use types::Coord;
 
 
 pub struct Renderer<S>
@@ -23,7 +24,7 @@ impl<S> Renderer<S>
         }
     }
 
-    pub fn draw_line(&mut self, x1: u32, y1: u32, x2: u32, y2: u32) {
+    pub fn draw_line(&mut self, x1: Coord, y1: Coord, x2: Coord, y2: Coord) {
         if !(x2 > x1 && y2 > y1) { panic!("not in the first octant"); }
 
         let dx: i64 = x2 as i64 - x1 as i64;
