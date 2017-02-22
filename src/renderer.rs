@@ -38,23 +38,31 @@ impl<S> Renderer<S>
         let adx = if dx >= 0 { dx } else { -dx };
         let ady = if dy >= 0 { dy } else { -dy };
 
-        if adx < ady { panic!("tall lines not yet handled"); }
-
         let x_step = if x2 > x1 { 1 } else { -1 };
         let y_step = if y2 > y1 { 1 } else { -1 };
         let mut x = x1;
         let mut y = y1;
         let mut error: i64 = 0;
         loop {
-            if 2 * error > adx {
-                y += y_step;
-                error -= adx;
+            if adx >= ady {
+                if 2 * error > adx {
+                    y += y_step;
+                    error -= adx;
+                }
+                error += ady;
+            } else {
+                if 2 * error > ady {
+                    x += x_step;
+                    error -= ady;
+                }
+                error += adx;
             }
-            error += ady;
 
             self.texture.set_pixel(x, y, pixel::WHITE);
 
-            x += x_step;
+            if adx >= ady { x += x_step }
+            else          { y += y_step }
+
             if x == x2 { break }
         }
     }
