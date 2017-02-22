@@ -3,17 +3,17 @@ use std::fmt::Display;
 
 use pixel;
 use pixel::Pixel;
-use types::Coord;
+use types::*;
 
 
 pub struct Texture {
-    pub w: Coord,
-    pub h: Coord,
+    pub w: Dimension,
+    pub h: Dimension,
     pub pixels: Vec<Pixel>,
 }
 
 impl Texture {
-    pub fn new(w: Coord, h: Coord) -> Texture {
+    pub fn new(w: Dimension, h: Dimension) -> Texture {
         Texture {
             w: w,
             h: h,
@@ -26,7 +26,10 @@ impl Texture {
     }
 
     pub fn set_pixel(&mut self, x: Coord, y: Coord, color: Pixel) {
-        if self.w < x || self.h < y { return; }
+        if (
+            x < 0 || y < 0 ||
+            self.w < x as Dimension || self.h < y as Dimension
+        ) { return; }
         let index = y as usize * self.w as usize + x as usize;
         self.pixels[index] = color;
     }

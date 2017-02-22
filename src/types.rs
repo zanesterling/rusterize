@@ -1,1 +1,2 @@
-pub type Coord = u32;
+pub type Coord = i16;
+pub type Dimension = u32;

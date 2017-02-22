@@ -1,7 +1,7 @@
 use pixel;
 use screen::Screen;
 use texture::Texture;
-use types::Coord;
+use types::*;
 
 
 pub struct Renderer<S>
@@ -24,24 +24,36 @@ impl<S> Renderer<S>
         }
     }
 
-    pub fn draw_line(&mut self, x1: Coord, y1: Coord, x2: Coord, y2: Coord) {
-        if !(x2 > x1 && y2 > y1) { panic!("not in the first octant"); }
+    pub fn draw_line(
+        &mut self,
+        x1: Coord,
+        y1: Coord,
+        x2: Coord,
+        y2: Coord
+    ) {
+        let dx = x2 as i64 - x1 as i64;
+        let dy = y2 as i64 - y1 as i64;
+        let adx = if dx >= 0 { dx } else { -dx };
+        let ady = if dy >= 0 { dy } else { -dy };
 
-        let dx: i64 = x2 as i64 - x1 as i64;
-        let dy: i64 = y2 as i64 - y1 as i64;
+        if adx < ady { panic!("tall lines not yet handled"); }
 
-        if dx < dy { panic!("not in the first octant"); }
-
-        let mut error: i64 = 0;
+        let x_step = if x2 > x1 { 1 } else { -1 };
+        let y_step = if y2 > y1 { 1 } else { -1 };
+        let mut x = x1;
         let mut y = y1;
-        for x in x1 .. x2 + 1 {
-            if 2 * error > dx {
-                y += 1;
-                error -= dx;
+        let mut error: i64 = 0;
+        loop {
+            if 2 * error > adx {
+                y += y_step;
+                error -= adx;
             }
-            error += dy;
+            error += ady;
 
             self.texture.set_pixel(x, y, pixel::WHITE);
+
+            x += x_step;
+            if x == x2 { break }
         }
     }
 

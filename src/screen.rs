@@ -4,24 +4,24 @@ use sdl2::gfx::primitives::DrawRenderer;
 use std::error;
 
 use texture::Texture;
-use types::Coord;
+use types::*;
 
 
 pub trait Screen {
     fn display_texture(&mut self, texture: &Texture);
 
-    fn width (&self) -> Coord;
-    fn height(&self) -> Coord;
+    fn width (&self) -> Dimension;
+    fn height(&self) -> Dimension;
 }
 
 
 pub struct TextScreen {
-    w: Coord,
-    h: Coord,
+    w: Dimension,
+    h: Dimension,
 }
 
 impl TextScreen {
-    pub fn new(_: &str, w: Coord, h: Coord) -> TextScreen {
+    pub fn new(_: &str, w: Dimension, h: Dimension) -> TextScreen {
         TextScreen {
             w: w,
             h: h,
@@ -34,21 +34,26 @@ impl Screen for TextScreen {
         println!("{}", texture);
     }
 
-    fn width (&self) -> Coord { self.w }
-    fn height(&self) -> Coord { self.h }
+    fn width (&self) -> Dimension { self.w }
+    fn height(&self) -> Dimension { self.h }
 }
 
 
 #[allow(dead_code)]
 pub struct GraphicalScreen<'a> {
-    w: Coord,
-    h: Coord,
+    w: Dimension,
+    h: Dimension,
     sdl_renderer: sdl2::render::Renderer<'a>,
 }
 
 #[allow(dead_code)]
 impl<'a> GraphicalScreen<'a> {
-    pub fn new(name: &str, w: Coord, h: Coord, sdl_context: &sdl2::Sdl)
+    pub fn new(
+        name: &str,
+        w: Dimension,
+        h: Dimension,
+        sdl_context: &sdl2::Sdl
+    )
         -> Result<GraphicalScreen<'a>, Box<error::Error>>
     {
         // Make an sdl2 window and get the renderer.
@@ -73,14 +78,14 @@ impl<'a> Screen for GraphicalScreen<'a> {
         assert!(texture.w == self.w && texture.h == self.h);
         for y in 0..self.h {
             for x in 0..self.w {
-                let color = texture.get_pixel(x, y);
-                self.sdl_renderer.pixel(x as i16, y as i16, color);
+                let color = texture.get_pixel(x as Coord, y as Coord);
+                self.sdl_renderer.pixel(x as Coord, y as Coord, color);
             }
         }
 
         self.sdl_renderer.present();
     }
 
-    fn width (&self) -> Coord { self.w }
-    fn height(&self) -> Coord { self.h }
+    fn width (&self) -> Dimension { self.w }
+    fn height(&self) -> Dimension { self.h }
 }
