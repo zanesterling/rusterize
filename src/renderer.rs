@@ -1,3 +1,5 @@
+use std::error;
+
 use pixel;
 use screen::Screen;
 use texture::Texture;
@@ -61,7 +63,7 @@ impl<S> Renderer<S>
         self.texture.set_all_pixels(pixel::BLACK);
     }
 
-    pub fn display(&mut self) {
-        self.screen.display_texture(&self.texture);
+    pub fn display(&mut self) -> Result<(), Box<error::Error>> {
+        self.screen.display_texture(&self.texture)
     }
 }

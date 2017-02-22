@@ -26,10 +26,9 @@ impl Texture {
     }
 
     pub fn set_pixel(&mut self, x: Coord, y: Coord, color: Pixel) {
-        if (
-            x < 0 || y < 0 ||
-            self.w < x as Dimension || self.h < y as Dimension
-        ) { return; }
+        if x < 0 || y < 0 { return }
+        if self.w < x as Dimension || self.h < y as Dimension { return }
+
         let index = y as usize * self.w as usize + x as usize;
         self.pixels[index] = color;
     }

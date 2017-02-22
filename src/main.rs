@@ -70,7 +70,7 @@ fn main() {
         renderer.draw_line(50, 430, 620, 75);
         renderer.draw_line(150, 20, 50, 40);
         renderer.draw_line(150, 40, 50, 20);
-        renderer.display();
+        main_try!(renderer.display());
 
         // Sleep until end-of-frame.
         let frame_duration = Instant::now() - frame_start;

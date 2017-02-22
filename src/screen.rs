@@ -8,18 +8,21 @@ use types::*;
 
 
 pub trait Screen {
-    fn display_texture(&mut self, texture: &Texture);
+    fn display_texture(&mut self, texture: &Texture)
+        -> Result<(), Box<error::Error>>;
 
     fn width (&self) -> Dimension;
     fn height(&self) -> Dimension;
 }
 
 
+#[allow(dead_code)]
 pub struct TextScreen {
     w: Dimension,
     h: Dimension,
 }
 
+#[allow(dead_code)]
 impl TextScreen {
     pub fn new(_: &str, w: Dimension, h: Dimension) -> TextScreen {
         TextScreen {
@@ -30,8 +33,11 @@ impl TextScreen {
 }
 
 impl Screen for TextScreen {
-    fn display_texture(&mut self, texture: &Texture) {
+    fn display_texture(&mut self, texture: &Texture)
+        -> Result<(), Box<error::Error>>
+    {
         println!("{}", texture);
+        Ok(())
     }
 
     fn width (&self) -> Dimension { self.w }
@@ -74,16 +80,19 @@ impl<'a> GraphicalScreen<'a> {
 }
 
 impl<'a> Screen for GraphicalScreen<'a> {
-    fn display_texture(&mut self, texture: &Texture) {
+    fn display_texture(&mut self, texture: &Texture)
+        -> Result<(), Box<error::Error>>
+    {
         assert!(texture.w == self.w && texture.h == self.h);
         for y in 0..self.h {
             for x in 0..self.w {
                 let color = texture.get_pixel(x as Coord, y as Coord);
-                self.sdl_renderer.pixel(x as Coord, y as Coord, color);
+                self.sdl_renderer.pixel(x as Coord, y as Coord, color)?;
             }
         }
 
         self.sdl_renderer.present();
+        Ok(())
     }
 
     fn width (&self) -> Dimension { self.w }
