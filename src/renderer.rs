@@ -69,7 +69,7 @@ impl<S> Renderer<S>
                 error += adx;
             }
 
-            self.texture.set_pixel(x, y, pixel::WHITE);
+            self.texture.set_pixel_nocheck(x, y, pixel::WHITE);
 
             if adx >= ady { x += x_step }
             else          { y += y_step }

@@ -87,7 +87,7 @@ impl<'a> Screen for GraphicalScreen<'a> {
         for y in 0..self.h {
             for x in 0..self.w {
                 let color = texture.get_pixel(x as Coord, y as Coord);
-                self.sdl_renderer.pixel(x as Coord, y as Coord, color)?;
+                self.sdl_renderer.pixel(x as Coord, y as Coord, color);
             }
         }
 

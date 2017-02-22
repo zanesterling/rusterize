@@ -51,6 +51,7 @@ fn main() {
     // State variables.
     let mut theta = 0f64;
     let r = 50f64;
+    let mut paused = false;
 
     // Main loop.
     'main_loop: loop {
@@ -65,21 +66,27 @@ fn main() {
                     break 'main_loop;
                 },
 
+                Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+                    paused = !paused;
+                }
+
                 _ => {},
             }
         }
 
-        // Update stuff.
-        theta += 0.1;
+        if !paused {
+            // Update stuff.
+            theta += 0.1;
 
-        // Draw stuff.
-        renderer.clear();
-        renderer.translate((SCREEN_WIDTH / 2) as Coord, (SCREEN_HEIGHT / 2) as Coord);
-        renderer.draw_line(
-            (-r * theta.cos()) as i16, (-r * theta.sin()) as i16,
-            ( r * theta.cos()) as i16, ( r * theta.sin()) as i16,
-        );
-        main_try!(renderer.display());
+            // Draw stuff.
+            renderer.clear();
+            renderer.translate((SCREEN_WIDTH / 2) as Coord, (SCREEN_HEIGHT / 2) as Coord);
+            renderer.draw_line(
+                (-r * theta.cos()) as i16, (-r * theta.sin()) as i16,
+                ( r * theta.cos()) as i16, ( r * theta.sin()) as i16,
+            );
+            main_try!(renderer.display());
+        }
 
         // Sleep until end-of-frame.
         let frame_duration = Instant::now() - frame_start;
