@@ -12,8 +12,9 @@ use std::time::Instant;
 mod pixel;
 mod renderer;
 mod screen;
+mod texture;
 
-use screen::Screen;
+use renderer::Renderer;
 
 macro_rules! main_try {
     ($x:expr) => {{
@@ -27,23 +28,23 @@ macro_rules! main_try {
 }
 
 
-const SCREEN_WIDTH:  u32 = 800;
-const SCREEN_HEIGHT: u32 = 600;
+const SCREEN_WIDTH:  u32 = 20;
+const SCREEN_HEIGHT: u32 = 20;
 
 const TARGET_FPS: u32 = 60;
 const FRAME_LEN_NANOS: u32 = 1_000_000_000 / (TARGET_FPS as u32);
 
 fn main() {
     // Initialize screen.
-    let sdl_context = sdl2::init().unwrap();
-    let mut screen = main_try!(Screen::new(
+    let screen = screen::TextScreen::new(
         "softraster",
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
-        &sdl_context
-    ));
-    let mut event_pump = sdl_context.event_pump().unwrap();
+    );
+    let mut renderer = Renderer::new(screen);
 
+    let sdl_context = sdl2::init().unwrap();
+    let mut event_pump = sdl_context.event_pump().unwrap();
 
     // Main loop.
     'main_loop: loop {
@@ -63,8 +64,9 @@ fn main() {
         }
 
         // Draw stuff.
-        screen.clear();
-        screen.display();
+        renderer.clear();
+        renderer.draw_line(0, 0, 5, 3);
+        renderer.display();
 
         // Sleep until end-of-frame.
         let frame_duration = Instant::now() - frame_start;
@@ -72,6 +74,7 @@ fn main() {
         if max_sleep > frame_duration {
             thread::sleep(max_sleep - frame_duration);
         }
+        break;
     }
 }
 

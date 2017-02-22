@@ -1,93 +1,78 @@
 use sdl2;
 
 use std::error;
-use std::fmt;
-use std::fmt::Display;
 
-use pixel;
-use pixel::Pixel;
+use texture::Texture;
 
 
-pub struct Screen<'a> {
-    w: u32,
-    h: u32,
-    pixels: Vec<Pixel>,
+pub trait Screen {
+    fn display_texture(&mut self, texture: &Texture);
 
-    renderer: sdl2::render::Renderer<'a>,
+    fn width (&self) -> u32;
+    fn height(&self) -> u32;
 }
 
-impl<'a> Screen<'a> {
-    pub fn new(name: &str, w: u32, h: u32, sdl_context: &sdl2::Sdl)
-        -> Result<Screen<'a>, Box<error::Error>>
+
+pub struct TextScreen {
+    w: u32,
+    h: u32,
+}
+
+impl TextScreen {
+    pub fn new(_: &str, w: u32, h: u32) -> TextScreen {
+        TextScreen {
+            w: w,
+            h: h,
+        }
+    }
+}
+
+impl Screen for TextScreen {
+    fn display_texture(&mut self, texture: &Texture) {
+        println!("{}", texture);
+    }
+
+    fn width (&self) -> u32 { self.w }
+    fn height(&self) -> u32 { self.h }
+}
+
+
+#[allow(dead_code)]
+pub struct GraphicalScreen<'a> {
+    w: u32,
+    h: u32,
+    sdl_renderer: sdl2::render::Renderer<'a>,
+}
+
+#[allow(dead_code)]
+impl<'a> GraphicalScreen<'a> {
+    pub fn new(name: &str, w: u32, h: u32)
+        -> Result<GraphicalScreen<'a>, Box<error::Error>>
     {
         // Make an sdl2 window and get the renderer.
+        let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
         let window = video_subsystem
             .window(name, w, h)
             .position_centered()
             .opengl()
             .build()?;
-        let renderer = window.renderer().build()?;
+        let sdl_renderer = window.renderer().build()?;
 
-        Ok(Screen {
+        Ok(GraphicalScreen {
             w: w,
             h: h,
-            pixels: vec![pixel::BLACK; (w * h) as usize],
-            renderer: renderer,
+            sdl_renderer: sdl_renderer,
         })
-    }
-
-    pub fn set_pixel(&mut self, x: u32, y: u32, color: Pixel) {
-        if self.w < x || self.h < y { return; }
-        let index = y as usize * self.w as usize + x as usize;
-        self.pixels[index] = color;
-    }
-
-    pub fn set_pixel_nocheck(
-        &mut self,
-        x: u32,
-        y: u32,
-        color: Pixel
-    ) {
-        let index = y as usize * self.w as usize + x as usize;
-        self.pixels[index] = color;
-    }
-
-    pub fn clear(&mut self) {
-        for i in 0..self.pixels.len() {
-            self.pixels[i] = pixel::BLACK;
-        }
-    }
-
-    pub fn display(&mut self) {
-        // TODO: Draw pixels to renderer.
-        self.renderer.present();
-    }
-
-    pub fn display_text(&self) {
-        println!("{}", self);
     }
 }
 
-impl<'a> Display for Screen<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Draw top bar.
-        try!(write!(f, "{:-^1$}\n", "", self.w as usize * 2 + 3));
-
-        // Draw rows.
-        self.pixels
-            .chunks(self.w as usize)
-            .map(|row| {
-                try!(write!(f, "| "));
-                for p in row {
-                    try!(write!(f, "{} ", p.as_char()));
-                }
-                try!(write!(f, "|\n"));
-                Ok(())
-            }).collect::<Result<Vec<_>, fmt::Error>>()?;
-
-        // Draw bottom bar.
-        try!(write!(f, "{:-^1$}\n", "", self.w as usize * 2 + 3));
-        Ok(())
+impl<'a> Screen for GraphicalScreen<'a> {
+    fn display_texture(&mut self, texture: &Texture) {
+        // TODO: Draw pixels to renderer.
+        self.sdl_renderer.present();
     }
+
+    fn width (&self) -> u32 { self.w }
+    fn height(&self) -> u32 { self.h }
 }
