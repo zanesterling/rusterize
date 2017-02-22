@@ -14,6 +14,7 @@ mod renderer;
 mod screen;
 mod texture;
 mod types;
+mod utils;
 
 use renderer::Renderer;
 use types::*;

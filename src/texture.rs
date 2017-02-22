@@ -4,6 +4,7 @@ use std::fmt::Display;
 use pixel;
 use pixel::Pixel;
 use types::*;
+use utils::*;
 
 
 pub struct Texture {
@@ -43,9 +44,26 @@ impl Texture {
         self.pixels[index] = color;
     }
 
+    pub fn set_row(
+        &mut self,
+        x1: Coord,
+        x2: Coord,
+        y: Coord,
+        color: Pixel
+    ) {
+        if 0 < y || y as Dimension >= self.h   { return }
+        if x2 < 0 || x1 as Dimension >= self.w { return }
+        let x1 = clamp(x1, 0, (self.w - 1) as Coord);
+        let x2 = clamp(x1, 0, (self.w - 1) as Coord);
+
+        for x in x1 .. x2 + 1 {
+            self.set_pixel_nocheck(x, y, color);
+        }
+    }
+
     pub fn set_all_pixels(&mut self, color: Pixel) {
         for i in 0..self.pixels.len() {
-            self.pixels[i] = color.clone();
+            self.pixels[i] = color;
         }
     }
 }
