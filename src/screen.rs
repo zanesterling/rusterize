@@ -1,5 +1,6 @@
 use sdl2;
 use sdl2::gfx::primitives::DrawRenderer;
+use sdl2::pixels::PixelFormatEnum;
 
 use std::error;
 
@@ -50,6 +51,7 @@ pub struct GraphicalScreen<'a> {
     w: Dimension,
     h: Dimension,
     sdl_renderer: sdl2::render::Renderer<'a>,
+    texture: sdl2::render::Texture,
 }
 
 #[allow(dead_code)]
@@ -70,11 +72,14 @@ impl<'a> GraphicalScreen<'a> {
             .opengl()
             .build()?;
         let sdl_renderer = window.renderer().build()?;
+        let texture = sdl_renderer
+            .create_texture_streaming(PixelFormatEnum::RGB24, w, h)?;
 
         Ok(GraphicalScreen {
             w: w,
             h: h,
             sdl_renderer: sdl_renderer,
+            texture: texture,
         })
     }
 }
@@ -84,13 +89,16 @@ impl<'a> Screen for GraphicalScreen<'a> {
         -> Result<(), Box<error::Error>>
     {
         assert!(texture.w == self.w && texture.h == self.h);
-        for y in 0..self.h {
-            for x in 0..self.w {
-                let color = texture.get_pixel(x as Coord, y as Coord);
-                self.sdl_renderer.pixel(x as Coord, y as Coord, color);
+        self.texture.with_lock(None, |buffer: &mut [u8], _: usize| {
+            for i in 0 .. texture.pixels.len() {
+                let pixel = texture.pixels[i].clone();
+                buffer[3 * i]     = pixel.r;
+                buffer[3 * i + 1] = pixel.g;
+                buffer[3 * i + 2] = pixel.b;
             }
-        }
+        })?;
 
+        self.sdl_renderer.copy(&self.texture, None, None);
         self.sdl_renderer.present();
         Ok(())
     }

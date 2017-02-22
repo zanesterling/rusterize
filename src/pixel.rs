@@ -10,9 +10,9 @@ pub const BLUE:  Pixel = Pixel { r: 0x00, g: 0x00, b: 0xff };
 
 #[derive(Clone)]
 pub struct Pixel {
-    r: u8,
-    g: u8,
-    b: u8,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
 }
 
 impl Pixel {
