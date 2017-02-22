@@ -1,5 +1,4 @@
 use sdl2;
-use sdl2::gfx::primitives::DrawRenderer;
 use sdl2::pixels::PixelFormatEnum;
 
 use std::error;
@@ -98,7 +97,7 @@ impl<'a> Screen for GraphicalScreen<'a> {
             }
         })?;
 
-        self.sdl_renderer.copy(&self.texture, None, None);
+        self.sdl_renderer.copy(&self.texture, None, None)?;
         self.sdl_renderer.present();
         Ok(())
     }

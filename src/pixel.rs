@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use sdl2::gfx::primitives::ToColor;
-
 pub const BLACK: Pixel = (0x00, 0x00, 0x00);
 pub const WHITE: Pixel = (0xff, 0xff, 0xff);
 pub const RED:   Pixel = (0xff, 0x00, 0x00);
