@@ -61,7 +61,7 @@ impl Display for Texture {
             .map(|row| {
                 try!(write!(f, "| "));
                 for p in row {
-                    try!(write!(f, "{} ", p.as_char()));
+                    try!(write!(f, "{} ", pixel::as_char(*p)));
                 }
                 try!(write!(f, "|\n"));
                 Ok(())

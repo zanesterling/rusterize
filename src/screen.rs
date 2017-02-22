@@ -89,12 +89,12 @@ impl<'a> Screen for GraphicalScreen<'a> {
         -> Result<(), Box<error::Error>>
     {
         assert!(texture.w == self.w && texture.h == self.h);
-        self.texture.with_lock(None, |buffer: &mut [u8], _: usize| {
+        self.texture.with_lock(None, |buf: &mut [u8], _: usize| {
             for i in 0 .. texture.pixels.len() {
-                let pixel = texture.pixels[i].clone();
-                buffer[3 * i]     = pixel.r;
-                buffer[3 * i + 1] = pixel.g;
-                buffer[3 * i + 2] = pixel.b;
+                let (r,g,b) = texture.pixels[i];
+                buf[3 * i]     = r;
+                buf[3 * i + 1] = g;
+                buf[3 * i + 2] = b;
             }
         })?;
 
