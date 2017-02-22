@@ -50,8 +50,8 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     // State variables.
-    let mut theta = 0f64;
     let r = 50f64;
+    let mut theta = 0f64;
     let mut paused = false;
 
     // Main loop.
