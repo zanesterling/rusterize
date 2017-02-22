@@ -16,6 +16,7 @@ mod texture;
 mod types;
 
 use renderer::Renderer;
+use types::*;
 
 macro_rules! main_try {
     ($x:expr) => {{
@@ -33,7 +34,7 @@ const SCREEN_WIDTH:  u32 = 800;
 const SCREEN_HEIGHT: u32 = 600;
 
 const TARGET_FPS: u32 = 60;
-const FRAME_LEN_NANOS: u32 = 1_000_000_000 / (TARGET_FPS as u32);
+const FRAME_LEN_NANOS: u32 = 1_000_000_000 / TARGET_FPS;
 
 fn main() {
     // Initialize screen.
@@ -46,6 +47,10 @@ fn main() {
     ));
     let mut renderer = Renderer::new(screen);
     let mut event_pump = sdl_context.event_pump().unwrap();
+
+    // State variables.
+    let mut theta = 0f64;
+    let r = 50f64;
 
     // Main loop.
     'main_loop: loop {
@@ -64,13 +69,16 @@ fn main() {
             }
         }
 
+        // Update stuff.
+        theta += 0.1;
+
         // Draw stuff.
         renderer.clear();
-        renderer.draw_line(50, 75, 620, 430);
-        renderer.draw_line(50, 430, 620, 75);
-        renderer.draw_line(150, 20, 50, 40);
-        renderer.draw_line(150, 40, 50, 20);
-        renderer.draw_line(0, 0, 40, 400);
+        renderer.translate((SCREEN_WIDTH / 2) as Coord, (SCREEN_HEIGHT / 2) as Coord);
+        renderer.draw_line(
+            (-r * theta.cos()) as i16, (-r * theta.sin()) as i16,
+            ( r * theta.cos()) as i16, ( r * theta.sin()) as i16,
+        );
         main_try!(renderer.display());
 
         // Sleep until end-of-frame.

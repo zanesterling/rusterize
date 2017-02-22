@@ -11,6 +11,9 @@ pub struct Renderer<S>
 {
     screen: S,
     texture: Texture,
+
+    offset_x: Coord,
+    offset_y: Coord,
 }
 
 impl<S> Renderer<S>
@@ -23,6 +26,9 @@ impl<S> Renderer<S>
         Renderer {
             screen: screen,
             texture: Texture::new(w, h),
+
+            offset_x: 0,
+            offset_y: 0,
         }
     }
 
@@ -33,6 +39,11 @@ impl<S> Renderer<S>
         x2: Coord,
         y2: Coord
     ) {
+        let x1 = x1 + self.offset_x;
+        let x2 = x2 + self.offset_x;
+        let y1 = y1 + self.offset_y;
+        let y2 = y2 + self.offset_y;
+
         let dx = x2 as i64 - x1 as i64;
         let dy = y2 as i64 - y1 as i64;
         let adx = if dx >= 0 { dx } else { -dx };
@@ -67,8 +78,15 @@ impl<S> Renderer<S>
         }
     }
 
+    pub fn translate(&mut self, dx: Coord, dy: Coord) {
+        self.offset_x += dx;
+        self.offset_y += dy;
+    }
+
     pub fn clear(&mut self) {
         self.texture.set_all_pixels(pixel::BLACK);
+        self.offset_x = 0;
+        self.offset_y = 0;
     }
 
     pub fn display(&mut self) -> Result<(), Box<error::Error>> {
