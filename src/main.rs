@@ -34,7 +34,8 @@ const SCREEN_WIDTH:  u32 = 800;
 const SCREEN_HEIGHT: u32 = 600;
 
 const TARGET_FPS: u32 = 60;
-const FRAME_LEN_NANOS: u32 = 1_000_000_000 / TARGET_FPS;
+const NANOS_PER_SECOND: u32 = 1_000_000_000;
+const FRAME_LEN_NANOS:  u32 = NANOS_PER_SECOND / TARGET_FPS;
 
 fn main() {
     // Initialize screen.
@@ -90,6 +91,7 @@ fn main() {
 
         // Sleep until end-of-frame.
         let frame_duration = Instant::now() - frame_start;
+        println!("{}", NANOS_PER_SECOND / frame_duration.subsec_nanos());
         let max_sleep = Duration::new(0, FRAME_LEN_NANOS);
         if max_sleep > frame_duration {
             thread::sleep(max_sleep - frame_duration);
