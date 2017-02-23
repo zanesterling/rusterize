@@ -12,8 +12,7 @@ pub struct Renderer<S>
     screen: S,
     texture: Texture,
 
-    offset_x: Coord,
-    offset_y: Coord,
+    offset: Point,
 }
 
 impl<S> Renderer<S>
@@ -27,32 +26,44 @@ impl<S> Renderer<S>
             screen: screen,
             texture: Texture::new(w, h),
 
-            offset_x: 0,
-            offset_y: 0,
+            offset: pt![0, 0],
         }
     }
 
-    pub fn draw_line(
-        &mut self,
-        x1: Coord,
-        y1: Coord,
-        x2: Coord,
-        y2: Coord
-    ) {
-        let x1 = x1 + self.offset_x;
-        let x2 = x2 + self.offset_x;
-        let y1 = y1 + self.offset_y;
-        let y2 = y2 + self.offset_y;
+    pub fn draw_point(&mut self, p: Point) {
+        println!("{:?}", p);
+        let p = p + self.offset;
+        let d = 7;
+        for row in 0 .. d {
+            self.texture.set_row(
+                p.x - d / 2,
+                p.x + d / 2,
+                p.y + row - d / 2,
+                pixel::WHITE,
+            );
+        }
+    }
 
-        let dx = x2 as i64 - x1 as i64;
-        let dy = y2 as i64 - y1 as i64;
+    fn draw_point_with_offset(&mut self, p: Point, offset: Point) {
+        let old_offset = self.offset;
+        self.offset = offset;
+        self.draw_point(p);
+        self.offset = old_offset;
+    }
+
+    pub fn draw_line(&mut self, p1: Point, p2: Point) {
+        let p1 = p1 + self.offset;
+        let p2 = p2 + self.offset;
+
+        let dx = p2.x as i64 - p1.x as i64;
+        let dy = p2.y as i64 - p1.y as i64;
         let adx = if dx >= 0 { dx } else { -dx };
         let ady = if dy >= 0 { dy } else { -dy };
 
-        let x_step = if x2 > x1 { 1 } else { -1 };
-        let y_step = if y2 > y1 { 1 } else { -1 };
-        let mut x = x1;
-        let mut y = y1;
+        let x_step = if p2.x > p1.x { 1 } else { -1 };
+        let y_step = if p2.y > p1.y { 1 } else { -1 };
+        let mut x = p1.x;
+        let mut y = p1.y;
         let mut error: i64 = 0;
         loop {
             if adx >= ady {
@@ -69,24 +80,72 @@ impl<S> Renderer<S>
                 error += adx;
             }
 
-            self.texture.set_pixel_nocheck(x, y, pixel::WHITE);
+            self.texture.set_pixel(x, y, pixel::WHITE);
 
-            if adx >= ady { x += x_step }
-            else          { y += y_step }
-
-            if x == x2 { break }
+            if adx >= ady {
+                if x == p2.x { break }
+                else { x += x_step }
+            } else {
+                if y == p2.y { break }
+                else { y += y_step }
+            }
         }
     }
 
+    fn draw_line_with_offset(
+        &mut self,
+        p1: Point,
+        p2: Point,
+        offset: Point
+    ) {
+        let old_offset = self.offset;
+        self.offset = offset;
+        self.draw_line(p1, p2);
+        self.offset = old_offset;
+    }
+
+    pub fn fill_triangle(&mut self, mut t: Triangle) {
+        t.sort_by_key(|p| p.y);
+        let off = self.offset;
+        let (top, middle, bot) = (t[0] + off, t[1] + off, t[2] + off);
+
+        if top.y == middle.y      { self.fill_top_flat_triangle(t); }
+        else if middle.y == bot.y { self.fill_bottom_flat_triangle(t); }
+        else {
+            let dy_middle = (middle.y - top.y) as f64;
+            let dy_bot = (bot.y - top.y) as f64;
+            let dx_bot = (bot.x - top.x) as f64;
+
+            let v4 = Point {
+                x: top.x + ((dy_middle / dy_bot) * dx_bot) as i16,
+                y: middle.y,
+            };
+            self.fill_top_flat_triangle(trigon![top, middle, v4]);
+            self.fill_bottom_flat_triangle(trigon![middle, v4, bot]);
+        }
+    }
+
+    fn fill_top_flat_triangle(&mut self, t: Triangle) {
+        self.draw_line_with_offset(t[0], t[1], pt![0, 0]);
+        self.draw_line_with_offset(t[1], t[2], pt![0, 0]);
+        self.draw_line_with_offset(t[2], t[0], pt![0, 0]);
+    }
+
+    fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
+        self.draw_line_with_offset(t[0], t[1], pt![0, 0]);
+        self.draw_line_with_offset(t[1], t[2], pt![0, 0]);
+        self.draw_line_with_offset(t[2], t[0], pt![0, 0]);
+    }
+
     pub fn translate(&mut self, dx: Coord, dy: Coord) {
-        self.offset_x += dx;
-        self.offset_y += dy;
+        self.offset.x += dx;
+        self.offset.y += dy;
     }
 
     pub fn clear(&mut self) {
         self.texture.set_all_pixels(pixel::BLACK);
-        self.offset_x = 0;
-        self.offset_y = 0;
+        self.offset.x = 0;
+        self.offset.y = 0;
     }
 
     pub fn display(&mut self) -> Result<(), Box<error::Error>> {

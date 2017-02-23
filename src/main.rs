@@ -9,11 +9,12 @@ use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 
+#[macro_use] mod types;
+
 mod pixel;
 mod renderer;
 mod screen;
 mod texture;
-mod types;
 mod utils;
 
 use renderer::Renderer;
@@ -51,9 +52,8 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     // State variables.
-    let r = 50f64;
-    let mut theta = 0f64;
     let mut paused = false;
+    let mut frame_dirty = true;
 
     // Main loop.
     'main_loop: loop {
@@ -78,16 +78,23 @@ fn main() {
 
         if !paused {
             // Update stuff.
-            theta += 0.1;
 
             // Draw stuff.
-            renderer.clear();
-            renderer.translate((SCREEN_WIDTH / 2) as Coord, (SCREEN_HEIGHT / 2) as Coord);
-            renderer.draw_line(
-                (-r * theta.cos()) as i16, (-r * theta.sin()) as i16,
-                ( r * theta.cos()) as i16, ( r * theta.sin()) as i16,
-            );
-            main_try!(renderer.display());
+            if frame_dirty {
+                renderer.clear();
+                renderer.translate(
+                    (SCREEN_WIDTH / 2) as Coord,
+                    (SCREEN_HEIGHT / 2) as Coord
+                );
+                renderer.fill_triangle([
+                    pt![-100, -100],
+                    pt![200, 100],
+                    pt![-75, 200],
+                ]);
+                main_try!(renderer.display());
+
+                frame_dirty = false;
+            }
         }
 
         // Sleep until end-of-frame.
