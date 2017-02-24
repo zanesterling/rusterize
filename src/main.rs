@@ -80,15 +80,20 @@ fn main() {
         if !paused {
             // Update stuff.
             theta += 0.01;
+            frame_dirty = true;
 
             // Draw stuff.
             if frame_dirty {
-                renderer.clear();
+                // Set transformation.
+                renderer.clear_transform();
+                renderer.rotate(theta);
                 renderer.translate(pt![
                     (SCREEN_WIDTH / 2) as Coord,
                     (SCREEN_HEIGHT / 2) as Coord
                 ]);
-                renderer.rotate(theta);
+
+                // Render image.
+                renderer.clear();
                 renderer.fill_triangle([
                     pt![-100, -100],
                     pt![200, 100],

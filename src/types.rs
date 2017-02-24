@@ -57,7 +57,7 @@ impl ops::Mul<Transform> for Point {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Transform {
     data: [[f64; DIM + 1]; DIM + 1]
 }
@@ -65,7 +65,7 @@ pub struct Transform {
 impl Transform {
     pub fn identity() -> Transform {
         let mut data = [[0.0; DIM + 1]; DIM + 1];
-        for i in 0 .. DIM { data[i][i] = 1.0 }
+        for i in 0 .. DIM + 1 { data[i][i] = 1.0 }
         Transform { data: data }
     }
 
@@ -99,7 +99,7 @@ impl ops::Mul for Transform {
         for i in 0 .. DIM + 1 {
             for j in 0 .. DIM + 1 {
                 for k in 0 .. DIM + 1 {
-                    data[i][j] += self.data[i][k] + rhs.data[k][j]
+                    data[i][j] += self.data[i][k] * rhs.data[k][j]
                 }
             }
         }

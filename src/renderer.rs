@@ -169,20 +169,24 @@ impl<S> Renderer<S>
         }
     }
 
-    pub fn translate(&mut self, p: Point) {
-        self.transform = self.transform * Transform::translate(p);
-    }
-
-    pub fn rotate(&mut self, theta: f64) {
-        self.transform = self.transform * Transform::rotate(theta);
-    }
-
     pub fn clear(&mut self) {
         self.texture.set_all_pixels(pixel::BLACK);
-        self.transform = Transform::identity();
     }
 
     pub fn display(&mut self) -> Result<(), Box<error::Error>> {
         self.screen.display_texture(&self.texture)
+    }
+
+
+    pub fn clear_transform(&mut self) {
+        self.transform = Transform::identity();
+    }
+
+    pub fn translate(&mut self, p: Point) {
+        self.transform = Transform::translate(p) * self.transform;
+    }
+
+    pub fn rotate(&mut self, theta: f64) {
+        self.transform = Transform::rotate(theta) * self.transform;
     }
 }
