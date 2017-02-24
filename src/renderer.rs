@@ -2,6 +2,7 @@ use std::error;
 use std::mem;
 
 use pixel;
+use pixel::Pixel;
 use screen::Screen;
 use texture::Texture;
 use types::*;
@@ -14,6 +15,7 @@ pub struct Renderer<S>
     texture: Texture,
 
     transform: Transform,
+    color: Pixel,
 }
 
 #[allow(dead_code)]
@@ -29,6 +31,7 @@ impl<S> Renderer<S>
             texture: Texture::new(w, h),
 
             transform: Transform::identity(),
+            color: pixel::WHITE,
         }
     }
 
@@ -40,7 +43,7 @@ impl<S> Renderer<S>
                 p.x - d / 2,
                 p.x + d / 2,
                 p.y + row - d / 2,
-                pixel::WHITE,
+                self.color
             );
         }
     }
@@ -81,7 +84,7 @@ impl<S> Renderer<S>
                 error += adx;
             }
 
-            self.texture.set_pixel(x, y, pixel::WHITE);
+            self.texture.set_pixel(x, y, self.color);
 
             if adx >= ady {
                 if x == p2.x { break }
@@ -142,7 +145,7 @@ impl<S> Renderer<S>
                 curx1 as Coord,
                 curx2 as Coord,
                 y,
-                pixel::WHITE
+                self.color
             );
             curx1 += invslope1;
             curx2 += invslope2;
@@ -162,7 +165,7 @@ impl<S> Renderer<S>
                 curx1 as Coord,
                 curx2 as Coord,
                 y,
-                pixel::WHITE
+                self.color
             );
             curx1 += invslope1;
             curx2 += invslope2;
@@ -189,4 +192,7 @@ impl<S> Renderer<S>
     pub fn rotate(&mut self, theta: f64) {
         self.transform = Transform::rotate(theta) * self.transform;
     }
+
+
+    pub fn set_color(&mut self, color: Pixel) { self.color = color; }
 }
