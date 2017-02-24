@@ -109,12 +109,13 @@ impl<S> Renderer<S>
     }
 
     pub fn fill_triangle(&mut self, mut t: Triangle) {
-        t.sort_by_key(|p| p.y);
-        let (top, middle, bot) = (
+        let mut t = trigon![
             t[0] * self.transform,
             t[1] * self.transform,
             t[2] * self.transform
-        );
+        ];
+        t.sort_by_key(|p| p.y);
+        let (top, middle, bot) = (t[0], t[1], t[2]);
 
         if top.y == middle.y      { self.fill_top_flat_triangle(t); }
         else if middle.y == bot.y { self.fill_bottom_flat_triangle(t); }
