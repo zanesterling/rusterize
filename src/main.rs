@@ -53,6 +53,7 @@ fn main() {
 
     // State variables.
     let mut paused = false;
+    let mut step = false;
     let mut frame_dirty = true;
     let mut theta = 0.0;
 
@@ -69,15 +70,21 @@ fn main() {
                     break 'main_loop;
                 },
 
-                Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+                Event::KeyDown { keycode: Some(Keycode::P), .. } => {
                     paused = !paused;
+                },
+
+                Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+                    step = true;
                 }
 
                 _ => {},
             }
         }
 
-        if !paused {
+        if !paused || step {
+            step = false;
+
             // Update stuff.
             theta += 0.01;
             frame_dirty = true;
@@ -95,9 +102,14 @@ fn main() {
                 // Render image.
                 renderer.clear();
                 renderer.fill_triangle([
-                    pt![-100, -100],
-                    pt![200, 100],
-                    pt![-75, 200],
+                    pt![-110, -110],
+                    pt![-110,   90],
+                    pt![  90, -110],
+                ]);
+                renderer.fill_triangle([
+                    pt![ 110,  110],
+                    pt![ 110, - 90],
+                    pt![- 90,  110],
                 ]);
                 main_try!(renderer.display());
 
