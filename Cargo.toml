@@ -3,6 +3,9 @@ name = "rusterize"
 version = "0.1.0"
 authors = ["Zane Sterling <sterling.zane@gmail.com>"]
 
+[profile.release]
+debug = true
+
 [dependencies]
 
 [dependencies.sdl2]

@@ -54,6 +54,7 @@ fn main() {
     // State variables.
     let mut paused = false;
     let mut frame_dirty = true;
+    let mut theta = 0.0;
 
     // Main loop.
     'main_loop: loop {
@@ -78,14 +79,16 @@ fn main() {
 
         if !paused {
             // Update stuff.
+            theta += 0.01;
 
             // Draw stuff.
             if frame_dirty {
                 renderer.clear();
-                renderer.translate(
+                renderer.translate(pt![
                     (SCREEN_WIDTH / 2) as Coord,
                     (SCREEN_HEIGHT / 2) as Coord
-                );
+                ]);
+                renderer.rotate(theta);
                 renderer.fill_triangle([
                     pt![-100, -100],
                     pt![200, 100],

@@ -13,7 +13,7 @@ pub struct Renderer<S>
     screen: S,
     texture: Texture,
 
-    offset: Point,
+    transform: Transform,
 }
 
 #[allow(dead_code)]
@@ -28,13 +28,12 @@ impl<S> Renderer<S>
             screen: screen,
             texture: Texture::new(w, h),
 
-            offset: pt![0, 0],
+            transform: Transform::identity(),
         }
     }
 
     pub fn draw_point(&mut self, p: Point) {
-        println!("{:?}", p);
-        let p = p + self.offset;
+        let p = p * self.transform;
         let d = 7;
         for row in 0 .. d {
             self.texture.set_row(
@@ -46,16 +45,16 @@ impl<S> Renderer<S>
         }
     }
 
-    fn draw_point_with_offset(&mut self, p: Point, offset: Point) {
-        let old_offset = self.offset;
-        self.offset = offset;
+    fn draw_point_with_transform(&mut self, p: Point, transform: Transform) {
+        let old_transform = self.transform;
+        self.transform = transform;
         self.draw_point(p);
-        self.offset = old_offset;
+        self.transform = old_transform;
     }
 
     pub fn draw_line(&mut self, p1: Point, p2: Point) {
-        let p1 = p1 + self.offset;
-        let p2 = p2 + self.offset;
+        let p1 = p1 * self.transform;
+        let p2 = p2 * self.transform;
 
         let dx = p2.x as i64 - p1.x as i64;
         let dy = p2.y as i64 - p1.y as i64;
@@ -94,22 +93,25 @@ impl<S> Renderer<S>
         }
     }
 
-    fn draw_line_with_offset(
+    fn draw_line_with_transform(
         &mut self,
         p1: Point,
         p2: Point,
-        offset: Point
+        transform: Transform
     ) {
-        let old_offset = self.offset;
-        self.offset = offset;
+        let old_transform = self.transform;
+        self.transform = transform;
         self.draw_line(p1, p2);
-        self.offset = old_offset;
+        self.transform = old_transform;
     }
 
     pub fn fill_triangle(&mut self, mut t: Triangle) {
         t.sort_by_key(|p| p.y);
-        let off = self.offset;
-        let (top, middle, bot) = (t[0] + off, t[1] + off, t[2] + off);
+        let (top, middle, bot) = (
+            t[0] * self.transform,
+            t[1] * self.transform,
+            t[2] * self.transform
+        );
 
         if top.y == middle.y      { self.fill_top_flat_triangle(t); }
         else if middle.y == bot.y { self.fill_bottom_flat_triangle(t); }
@@ -167,15 +169,17 @@ impl<S> Renderer<S>
         }
     }
 
-    pub fn translate(&mut self, dx: Coord, dy: Coord) {
-        self.offset.x += dx;
-        self.offset.y += dy;
+    pub fn translate(&mut self, p: Point) {
+        self.transform = self.transform * Transform::translate(p);
+    }
+
+    pub fn rotate(&mut self, theta: f64) {
+        self.transform = self.transform * Transform::rotate(theta);
     }
 
     pub fn clear(&mut self) {
         self.texture.set_all_pixels(pixel::BLACK);
-        self.offset.x = 0;
-        self.offset.y = 0;
+        self.transform = Transform::identity();
     }
 
     pub fn display(&mut self) -> Result<(), Box<error::Error>> {
