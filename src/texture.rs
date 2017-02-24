@@ -51,10 +51,10 @@ impl Texture {
         y: Coord,
         color: Pixel
     ) {
-        if 0 < y || y as Dimension >= self.h   { return }
+        if y < 0 || y as Dimension >= self.h   { return }
         if x2 < 0 || x1 as Dimension >= self.w { return }
         let x1 = clamp(x1, 0, (self.w - 1) as Coord);
-        let x2 = clamp(x1, 0, (self.w - 1) as Coord);
+        let x2 = clamp(x2, 0, (self.w - 1) as Coord);
 
         for x in x1 .. x2 + 1 {
             self.set_pixel_nocheck(x, y, color);

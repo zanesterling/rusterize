@@ -1,4 +1,5 @@
 use std::error;
+use std::mem;
 
 use pixel;
 use screen::Screen;
@@ -15,6 +16,7 @@ pub struct Renderer<S>
     offset: Point,
 }
 
+#[allow(dead_code)]
 impl<S> Renderer<S>
     where S: Screen
 {
@@ -117,7 +119,7 @@ impl<S> Renderer<S>
             let dx_bot = (bot.x - top.x) as f64;
 
             let v4 = Point {
-                x: top.x + ((dy_middle / dy_bot) * dx_bot) as i16,
+                x: top.x + ((dy_middle / dy_bot) * dx_bot) as Coord,
                 y: middle.y,
             };
             self.fill_top_flat_triangle(trigon![top, middle, v4]);
@@ -126,15 +128,43 @@ impl<S> Renderer<S>
     }
 
     fn fill_top_flat_triangle(&mut self, t: Triangle) {
-        self.draw_line_with_offset(t[0], t[1], pt![0, 0]);
-        self.draw_line_with_offset(t[1], t[2], pt![0, 0]);
-        self.draw_line_with_offset(t[2], t[0], pt![0, 0]);
+        let (top, mut left, mut right) = (t[0], t[1], t[2]);
+        if left.x > right.x { mem::swap(&mut left, &mut right) }
+        let invslope1 = (left.x - top.x) as f64 / (left.y - top.y) as f64;
+        let invslope2 = (right.x - top.x) as f64 / (right.y - top.y) as f64;
+        let mut curx1 = top.x as f64;
+        let mut curx2 = top.x as f64;
+
+        for y in top.y .. left.y + 1 {
+            self.texture.set_row(
+                curx1 as Coord,
+                curx2 as Coord,
+                y,
+                pixel::WHITE
+            );
+            curx1 += invslope1;
+            curx2 += invslope2;
+        }
     }
 
     fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
-        self.draw_line_with_offset(t[0], t[1], pt![0, 0]);
-        self.draw_line_with_offset(t[1], t[2], pt![0, 0]);
-        self.draw_line_with_offset(t[2], t[0], pt![0, 0]);
+        let (mut left, mut right, bot) = (t[0], t[1], t[2]);
+        if left.x > right.x { mem::swap(&mut left, &mut right) }
+        let invslope1 = (bot.x - left.x)  as f64 / (bot.y - left.y)  as f64;
+        let invslope2 = (bot.x - right.x) as f64 / (bot.y - right.y) as f64;
+        let mut curx1 = left.x  as f64;
+        let mut curx2 = right.x as f64;
+
+        for y in left.y .. bot.y + 1 {
+            self.texture.set_row(
+                curx1 as Coord,
+                curx2 as Coord,
+                y,
+                pixel::WHITE
+            );
+            curx1 += invslope1;
+            curx2 += invslope2;
+        }
     }
 
     pub fn translate(&mut self, dx: Coord, dy: Coord) {
