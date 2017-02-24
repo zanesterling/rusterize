@@ -74,7 +74,7 @@ impl Transform {
         if DIM == 2 {
             data[0][0] =  theta.cos();
             data[0][1] =  theta.sin();
-            data[1][0] = -theta.cos();
+            data[1][0] = -theta.sin();
             data[1][1] =  theta.cos();
         }
 
