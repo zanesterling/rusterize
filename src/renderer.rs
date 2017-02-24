@@ -128,12 +128,12 @@ impl<S> Renderer<S>
                 x: top.x + ((dy_middle / dy_bot) * dx_bot) as Coord,
                 y: middle.y,
             };
-            self.fill_top_flat_triangle(trigon![top, middle, v4]);
-            self.fill_bottom_flat_triangle(trigon![middle, v4, bot]);
+            self.fill_bottom_flat_triangle(trigon![top, middle, v4]);
+            self.fill_top_flat_triangle(trigon![middle, v4, bot]);
         }
     }
 
-    fn fill_top_flat_triangle(&mut self, t: Triangle) {
+    fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
         let (top, mut left, mut right) = (t[0], t[1], t[2]);
         if left.x > right.x { mem::swap(&mut left, &mut right) }
         let invslope1 = (left.x - top.x) as f64 / (left.y - top.y) as f64;
@@ -153,7 +153,7 @@ impl<S> Renderer<S>
         }
     }
 
-    fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
+    fn fill_top_flat_triangle(&mut self, t: Triangle) {
         let (mut left, mut right, bot) = (t[0], t[1], t[2]);
         if left.x > right.x { mem::swap(&mut left, &mut right) }
         let invslope1 = (bot.x - left.x)  as f64 / (bot.y - left.y)  as f64;
