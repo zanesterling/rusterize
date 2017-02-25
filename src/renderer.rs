@@ -192,6 +192,14 @@ impl<S> Renderer<S>
         self.transform = Transform::translate(p) * self.transform;
     }
 
+    pub fn rotate_x(&mut self, theta: f64) {
+        self.transform = Transform::rotate_x(theta) * self.transform;
+    }
+
+    pub fn rotate_y(&mut self, theta: f64) {
+        self.transform = Transform::rotate_y(theta) * self.transform;
+    }
+
     pub fn rotate_z(&mut self, theta: f64) {
         self.transform = Transform::rotate_z(theta) * self.transform;
     }

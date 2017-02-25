@@ -93,7 +93,7 @@ fn main() {
             if frame_dirty {
                 // Set transformation.
                 renderer.clear_transform();
-                renderer.rotate_z(theta);
+                renderer.rotate_y(theta);
                 renderer.translate(pt_2d![
                     (SCREEN_WIDTH / 2) as Coord,
                     (SCREEN_HEIGHT / 2) as Coord

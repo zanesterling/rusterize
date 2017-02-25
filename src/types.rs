@@ -19,12 +19,21 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn from_array(arr: [Coord; DIM + 1]) -> Point {
-        return Point { x: arr[0], y: arr[1], z: arr[2] }
+    pub fn from_array(arr: [f64; DIM + 1]) -> Point {
+        Point {
+            x: (arr[0] / arr[DIM]) as Coord,
+            y: (arr[1] / arr[DIM]) as Coord,
+            z: (arr[2] / arr[DIM]) as Coord
+        }
     }
 
-    pub fn to_array(self) -> [Coord; DIM + 1] {
-        [self.x, self.y, self.z, 1]
+    pub fn to_array(self) -> [f64; DIM + 1] {
+        [
+            self.x as f64,
+            self.y as f64,
+            self.z as f64,
+            1.
+        ]
     }
 }
 
@@ -53,13 +62,13 @@ impl ops::Mul<Transform> for Point {
 
     fn mul(self, rhs: Transform) -> Point {
         let arr_in = self.to_array();
-        let mut arr_out = [0; DIM + 1];
+        let mut arr_out = [0.; DIM + 1];
         for i in 0 .. DIM + 1 {
             arr_out[i] = rhs.data[i]
                 .iter()
                 .zip(arr_in.iter())
-                .map(|(a, b)| a * (*b as f64))
-                .fold(0.0, |a, b| a + b) as Coord;
+                .map(|(a, b)| a * b)
+                .sum()
         }
 
         Point::from_array(arr_out)
@@ -76,6 +85,24 @@ impl Transform {
         let mut data = [[0.0; DIM + 1]; DIM + 1];
         for i in 0 .. DIM + 1 { data[i][i] = 1.0 }
         Transform { data: data }
+    }
+
+    pub fn rotate_x(theta: f64) -> Transform {
+        let mut t = Transform::identity();
+        t.data[1][1] =  theta.cos();
+        t.data[1][2] =  theta.sin();
+        t.data[2][1] = -theta.sin();
+        t.data[2][2] =  theta.cos();
+        t
+    }
+
+    pub fn rotate_y(theta: f64) -> Transform {
+        let mut t = Transform::identity();
+        t.data[0][0] =  theta.cos();
+        t.data[0][2] =  theta.sin();
+        t.data[2][0] = -theta.sin();
+        t.data[2][2] =  theta.cos();
+        t
     }
 
     pub fn rotate_z(theta: f64) -> Transform {
