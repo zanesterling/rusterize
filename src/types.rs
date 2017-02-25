@@ -1,6 +1,7 @@
 use std::ops;
 
-pub type Coord = i16;
+pub type Coord = f64;
+pub type PixCoord = i16;
 pub type Dimension = u32;
 
 pub type Triangle = [Point; 3];
@@ -21,9 +22,9 @@ pub struct Point {
 impl Point {
     pub fn from_array(arr: [f64; DIM + 1]) -> Point {
         Point {
-            x: (arr[0] / arr[DIM]) as Coord,
-            y: (arr[1] / arr[DIM]) as Coord,
-            z: (arr[2] / arr[DIM]) as Coord
+            x: arr[0] / arr[DIM],
+            y: arr[1] / arr[DIM],
+            z: arr[2] / arr[DIM]
         }
     }
 
@@ -38,7 +39,7 @@ impl Point {
 }
 
 macro_rules! pt_2d {
-    ( $x:expr, $y:expr ) => { pt![$x, $y, 0] }
+    ( $x:expr, $y:expr ) => { pt![$x, $y, 0.] }
 }
 
 macro_rules! pt {
@@ -87,6 +88,13 @@ impl Transform {
         Transform { data: data }
     }
 
+    pub fn translate(off: Point) -> Transform {
+        let mut t = Transform::identity();
+        let arr_in = off.to_array();
+        for i in 0 .. DIM { t.data[i][DIM] = arr_in[i] as f64 }
+        t
+    }
+
     pub fn rotate_x(theta: f64) -> Transform {
         let mut t = Transform::identity();
         t.data[1][1] =  theta.cos();
@@ -114,10 +122,20 @@ impl Transform {
         t
     }
 
-    pub fn translate(off: Point) -> Transform {
+    pub fn scale(x: f64, y: f64, z: f64) -> Transform {
+        let mut data = [[0.; DIM + 1]; DIM + 1];
+        data[0][0] = x;
+        data[1][1] = y;
+        data[2][2] = z;
+        data[DIM][DIM] = 1.;
+        Transform { data: data }
+    }
+
+    pub fn perspective() -> Transform {
         let mut t = Transform::identity();
-        let arr_in = off.to_array();
-        for i in 0 .. DIM { t.data[i][DIM] = arr_in[i] as f64 }
+        t.data[DIM    ][DIM    ] =  0.;
+        t.data[DIM    ][DIM - 1] = -1.;
+        t.data[DIM - 1][DIM - 1] = -1.;
         t
     }
 }

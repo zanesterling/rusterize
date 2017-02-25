@@ -94,22 +94,25 @@ fn main() {
                 // Set transformation.
                 renderer.clear_transform();
                 renderer.rotate_y(theta);
+                renderer.translate(pt![0., 0., -2.]);
+                renderer.perspective();
+                renderer.scale(200., 200., 1.);
                 renderer.translate(pt_2d![
-                    (SCREEN_WIDTH / 2) as Coord,
+                    (SCREEN_WIDTH / 2)  as Coord,
                     (SCREEN_HEIGHT / 2) as Coord
                 ]);
 
                 // Render image.
                 renderer.clear();
                 renderer.fill_triangle([
-                    pt_2d![-110, -110],
-                    pt_2d![-110,   90],
-                    pt_2d![  90, -110],
+                    pt_2d![-1., -1.],
+                    pt_2d![-1.,  1.],
+                    pt_2d![ 1., -1.],
                 ]);
                 renderer.fill_triangle([
-                    pt_2d![ 110,  110],
-                    pt_2d![ 110, - 90],
-                    pt_2d![- 90,  110],
+                    pt_2d![ 1.,  1.],
+                    pt_2d![-1.,  1.],
+                    pt_2d![ 1., -1.],
                 ]);
                 main_try!(renderer.display());
 

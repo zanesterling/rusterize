@@ -1,3 +1,4 @@
+use std::cmp::Ordering::Equal;
 use std::error;
 use std::mem;
 
@@ -40,9 +41,9 @@ impl<S> Renderer<S>
         let d = 7;
         for row in 0 .. d {
             self.texture.set_row(
-                p.x - d / 2,
-                p.x + d / 2,
-                p.y + row - d / 2,
+                p.x as PixCoord - d / 2,
+                p.x as PixCoord + d / 2,
+                p.y as PixCoord + row - d / 2,
                 self.color
             );
         }
@@ -58,16 +59,20 @@ impl<S> Renderer<S>
     pub fn draw_line(&mut self, p1: Point, p2: Point) {
         let p1 = p1 * self.transform;
         let p2 = p2 * self.transform;
+        let p1x = p1.x as PixCoord;
+        let p1y = p1.y as PixCoord;
+        let p2x = p2.x as PixCoord;
+        let p2y = p2.y as PixCoord;
 
         let dx = p2.x as i64 - p1.x as i64;
         let dy = p2.y as i64 - p1.y as i64;
         let adx = if dx >= 0 { dx } else { -dx };
         let ady = if dy >= 0 { dy } else { -dy };
 
-        let x_step = if p2.x > p1.x { 1 } else { -1 };
-        let y_step = if p2.y > p1.y { 1 } else { -1 };
-        let mut x = p1.x;
-        let mut y = p1.y;
+        let x_step = if p2x > p1x { 1 } else { -1 };
+        let y_step = if p2y > p1y { 1 } else { -1 };
+        let mut x = p1x;
+        let mut y = p1y;
         let mut error: i64 = 0;
         loop {
             if adx >= ady {
@@ -87,10 +92,10 @@ impl<S> Renderer<S>
             self.texture.set_pixel(x, y, self.color);
 
             if adx >= ady {
-                if x == p2.x { break }
+                if x == p2x { break }
                 else { x += x_step }
             } else {
-                if y == p2.y { break }
+                if y == p2y { break }
                 else { y += y_step }
             }
         }
@@ -114,7 +119,7 @@ impl<S> Renderer<S>
             t[1] * self.transform,
             t[2] * self.transform
         ];
-        t.sort_by_key(|p| p.y);
+        t.sort_by( |p1, p2| p1.y.partial_cmp(&p2.y).unwrap_or(Equal));
         let (top, middle, bot) = (t[0], t[1], t[2]);
 
         if top.y == middle.y      { self.fill_top_flat_triangle(t); }
@@ -143,10 +148,10 @@ impl<S> Renderer<S>
         let mut curx1 = top.x as f64;
         let mut curx2 = top.x as f64;
 
-        for y in top.y .. left.y + 1 {
+        for y in top.y as PixCoord .. left.y as PixCoord + 1 {
             self.texture.set_row(
-                curx1 as Coord,
-                curx2 as Coord,
+                curx1 as PixCoord,
+                curx2 as PixCoord,
                 y,
                 self.color
             );
@@ -163,10 +168,10 @@ impl<S> Renderer<S>
         let mut curx1 = left.x  as f64;
         let mut curx2 = right.x as f64;
 
-        for y in left.y .. bot.y + 1 {
+        for y in left.y as PixCoord .. bot.y as PixCoord + 1 {
             self.texture.set_row(
-                curx1 as Coord,
-                curx2 as Coord,
+                curx1 as PixCoord,
+                curx2 as PixCoord,
                 y,
                 self.color
             );
@@ -202,6 +207,14 @@ impl<S> Renderer<S>
 
     pub fn rotate_z(&mut self, theta: f64) {
         self.transform = Transform::rotate_z(theta) * self.transform;
+    }
+
+    pub fn scale(&mut self, x: f64, y: f64, z: f64) {
+        self.transform = Transform::scale(x, y, z) * self.transform;
+    }
+
+    pub fn perspective(&mut self) {
+        self.transform = Transform::perspective() * self.transform;
     }
 
 

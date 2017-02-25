@@ -26,7 +26,7 @@ impl Texture {
         self.pixels[x as usize + y as usize * self.w as usize].clone()
     }
 
-    pub fn set_pixel(&mut self, x: Coord, y: Coord, color: Pixel) {
+    pub fn set_pixel(&mut self, x: PixCoord, y: PixCoord, color: Pixel) {
         if x < 0 || y < 0 { return }
         if self.w < x as Dimension || self.h < y as Dimension { return }
 
@@ -36,8 +36,8 @@ impl Texture {
 
     pub fn set_pixel_nocheck(
         &mut self,
-        x: Coord,
-        y: Coord,
+        x: PixCoord,
+        y: PixCoord,
         color: Pixel
     ) {
         let index = y as usize * self.w as usize + x as usize;
@@ -46,15 +46,17 @@ impl Texture {
 
     pub fn set_row(
         &mut self,
-        x1: Coord,
-        x2: Coord,
-        y: Coord,
+        x1: PixCoord,
+        x2: PixCoord,
+        y:  PixCoord,
         color: Pixel
     ) {
-        if y < 0 || y as Dimension >= self.h   { return }
+        if y  < 0 || y  as Dimension >= self.h { return }
         if x2 < 0 || x1 as Dimension >= self.w { return }
-        let x1 = clamp(x1, 0, (self.w - 1) as Coord);
-        let x2 = clamp(x2, 0, (self.w - 1) as Coord);
+
+        let x1 = clamp(x1, 0, (self.w - 1) as PixCoord);
+        let x2 = clamp(x2, 0, (self.w - 1) as PixCoord);
+        let y  = y;
 
         for x in x1 .. x2 + 1 {
             self.set_pixel_nocheck(x, y, color);
