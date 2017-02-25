@@ -123,11 +123,13 @@ impl<S> Renderer<S>
             let dy_middle = (middle.y - top.y) as f64;
             let dy_bot = (bot.y - top.y) as f64;
             let dx_bot = (bot.x - top.x) as f64;
+            let dz_bot = (bot.z - top.z) as f64;
 
-            let v4 = Point {
-                x: top.x + ((dy_middle / dy_bot) * dx_bot) as Coord,
-                y: middle.y,
-            };
+            let v4 = pt![
+                top.x + ((dy_middle / dy_bot) * dx_bot) as Coord,
+                middle.y,
+                top.z + ((dy_middle / dy_bot) * dz_bot) as Coord
+            ];
             self.fill_bottom_flat_triangle(trigon![top, middle, v4]);
             self.fill_top_flat_triangle(trigon![middle, v4, bot]);
         }
@@ -190,8 +192,8 @@ impl<S> Renderer<S>
         self.transform = Transform::translate(p) * self.transform;
     }
 
-    pub fn rotate(&mut self, theta: f64) {
-        self.transform = Transform::rotate(theta) * self.transform;
+    pub fn rotate_z(&mut self, theta: f64) {
+        self.transform = Transform::rotate_z(theta) * self.transform;
     }
 
 

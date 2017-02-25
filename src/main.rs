@@ -93,8 +93,8 @@ fn main() {
             if frame_dirty {
                 // Set transformation.
                 renderer.clear_transform();
-                renderer.rotate(theta);
-                renderer.translate(pt![
+                renderer.rotate_z(theta);
+                renderer.translate(pt_2d![
                     (SCREEN_WIDTH / 2) as Coord,
                     (SCREEN_HEIGHT / 2) as Coord
                 ]);
@@ -102,14 +102,14 @@ fn main() {
                 // Render image.
                 renderer.clear();
                 renderer.fill_triangle([
-                    pt![-110, -110],
-                    pt![-110,   90],
-                    pt![  90, -110],
+                    pt_2d![-110, -110],
+                    pt_2d![-110,   90],
+                    pt_2d![  90, -110],
                 ]);
                 renderer.fill_triangle([
-                    pt![ 110,  110],
-                    pt![ 110, - 90],
-                    pt![- 90,  110],
+                    pt_2d![ 110,  110],
+                    pt_2d![ 110, - 90],
+                    pt_2d![- 90,  110],
                 ]);
                 main_try!(renderer.display());
 

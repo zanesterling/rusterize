@@ -9,33 +9,42 @@ macro_rules! trigon {
     ( $p1:expr, $p2:expr, $p3:expr ) => { [$p1, $p2, $p3] }
 }
 
-const DIM: usize = 2;
+const DIM: usize = 3;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Point {
     pub x: Coord,
     pub y: Coord,
+    pub z: Coord,
 }
 
 impl Point {
     pub fn from_array(arr: [Coord; DIM + 1]) -> Point {
-        return Point { x: arr[0], y: arr[1] }
+        return Point { x: arr[0], y: arr[1], z: arr[2] }
     }
 
     pub fn to_array(self) -> [Coord; DIM + 1] {
-        [self.x, self.y, 1]
+        [self.x, self.y, self.z, 1]
     }
 }
 
+macro_rules! pt_2d {
+    ( $x:expr, $y:expr ) => { pt![$x, $y, 0] }
+}
+
 macro_rules! pt {
-    ( $x:expr, $y:expr ) => { Point { x: $x, y: $y }}
+    ( $x:expr, $y:expr, $z:expr ) => { Point { x: $x, y: $y, z: $z }}
 }
 
 impl ops::Add for Point {
     type Output = Point;
 
     fn add(self, other: Point) -> Point {
-        pt!(self.x + other.x, self.y + other.y)
+        pt!(
+            self.x + other.x,
+            self.y + other.y,
+            self.z + other.z
+        )
     }
 }
 
@@ -69,17 +78,13 @@ impl Transform {
         Transform { data: data }
     }
 
-    pub fn rotate(theta: f64) -> Transform {
-        let mut data = [[0.0; DIM + 1]; DIM + 1];
-        if DIM == 2 {
-            data[0][0] =  theta.cos();
-            data[0][1] =  theta.sin();
-            data[1][0] = -theta.sin();
-            data[1][1] =  theta.cos();
-        }
-
-        data[DIM][DIM] = 1.0;
-        Transform { data: data }
+    pub fn rotate_z(theta: f64) -> Transform {
+        let mut t = Transform::identity();
+        t.data[0][0] =  theta.cos();
+        t.data[0][1] =  theta.sin();
+        t.data[1][0] = -theta.sin();
+        t.data[1][1] =  theta.cos();
+        t
     }
 
     pub fn translate(off: Point) -> Transform {
