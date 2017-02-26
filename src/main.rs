@@ -105,13 +105,13 @@ fn main() {
                     break 'main_loop;
                 },
 
-                Event::KeyDown { keycode: Some(Keycode::P), .. } => {
-                    paused = !paused;
+                Event::KeyDown { keycode: Some(code), .. } => {
+                    match code {
+                        Keycode::P      => paused = !paused,
+                        Keycode::Space  => step = true,
+                        _ => {}
+                    }
                 },
-
-                Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
-                    step = true;
-                }
 
                 _ => {},
             }
