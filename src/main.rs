@@ -18,6 +18,7 @@ mod screen;
 mod texture;
 mod utils;
 
+use object::Object;
 use renderer::Renderer;
 use types::*;
 
@@ -51,6 +52,22 @@ fn main() {
     ));
     let mut renderer = Renderer::new(screen);
     let mut event_pump = sdl_context.event_pump().unwrap();
+
+    // Set up render objects.
+    let objects = vec![
+        Object::new(vec![
+            trigon![
+                pt_2d![-1., -1.],
+                pt_2d![-1.,  1.],
+                pt_2d![ 1., -1.]
+            ],
+            trigon![
+                pt_2d![ 1.,  1. ],
+                pt_2d![-0.9, 1. ],
+                pt_2d![ 1., -0.9]
+            ]
+        ])
+    ];
 
     // State variables.
     let mut paused = false;
@@ -105,16 +122,9 @@ fn main() {
 
                 // Render image.
                 renderer.clear();
-                renderer.fill_triangle(trigon![
-                    pt_2d![-1., -1.],
-                    pt_2d![-1.,  1.],
-                    pt_2d![ 1., -1.]
-                ]);
-                renderer.fill_triangle(trigon![
-                    pt_2d![ 1.,  1. ],
-                    pt_2d![-0.9, 1. ],
-                    pt_2d![ 1., -0.9]
-                ]);
+                for object in &objects {
+                    object.render(&mut renderer);
+                }
                 main_try!(renderer.display());
 
                 frame_dirty = false;
