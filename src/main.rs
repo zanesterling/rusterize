@@ -11,6 +11,7 @@ use std::time::Instant;
 
 #[macro_use] mod types;
 
+mod object;
 mod pixel;
 mod renderer;
 mod screen;
@@ -104,15 +105,15 @@ fn main() {
 
                 // Render image.
                 renderer.clear();
-                renderer.fill_triangle([
+                renderer.fill_triangle(trigon![
                     pt_2d![-1., -1.],
                     pt_2d![-1.,  1.],
-                    pt_2d![ 1., -1.],
+                    pt_2d![ 1., -1.]
                 ]);
-                renderer.fill_triangle([
-                    pt_2d![ 1.,  1.],
-                    pt_2d![-0.9,  1.],
-                    pt_2d![ 1., -0.9],
+                renderer.fill_triangle(trigon![
+                    pt_2d![ 1.,  1. ],
+                    pt_2d![-0.9, 1. ],
+                    pt_2d![ 1., -0.9]
                 ]);
                 main_try!(renderer.display());
 

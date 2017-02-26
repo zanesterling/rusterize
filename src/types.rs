@@ -4,11 +4,44 @@ pub type Coord = f64;
 pub type PixCoord = i16;
 pub type Dimension = u32;
 
-pub type Triangle = [Point; 3];
+
+#[derive(Clone, Copy)]
+pub struct Triangle {
+    p1: Point,
+    p2: Point,
+    p3: Point,
+}
 
 macro_rules! trigon {
-    ( $p1:expr, $p2:expr, $p3:expr ) => { [$p1, $p2, $p3] }
+    ( $p1:expr, $p2:expr, $p3:expr ) => { Triangle::new($p1, $p2, $p3) }
 }
+
+impl Triangle {
+    pub fn new(p1: Point, p2: Point, p3: Point) -> Triangle {
+        Triangle { p1:p1, p2:p2, p3:p3 }
+    }
+
+    pub fn to_tuple(self) -> (Point, Point, Point) {
+        (self.p1, self.p2, self.p3)
+    }
+
+    pub fn to_arr(self) -> [Point; 3] {
+        [self.p1, self.p2, self.p3]
+    }
+}
+
+impl ops::Mul<Transform> for Triangle {
+    type Output = Triangle;
+
+    fn mul(self, trans: Transform) -> Triangle {
+        trigon![
+            self.p1 * trans,
+            self.p2 * trans,
+            self.p3 * trans
+        ]
+    }
+}
+
 
 const DIM: usize = 3;
 

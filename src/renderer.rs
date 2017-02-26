@@ -114,13 +114,14 @@ impl<S> Renderer<S>
     }
 
     pub fn fill_triangle(&mut self, t: Triangle) {
-        let mut t = trigon![
-            t[0] * self.transform,
-            t[1] * self.transform,
-            t[2] * self.transform
-        ];
-        t.sort_by( |p1, p2| p1.y.partial_cmp(&p2.y).unwrap_or(Equal));
-        let (top, middle, bot) = (t[0], t[1], t[2]);
+        let t = t * self.transform;
+        let mut pts = t.to_arr();
+        pts.sort_by(
+            |p1, p2|
+            p1.y.partial_cmp(&p2.y)
+                .unwrap_or(Equal)
+        );
+        let (top, middle, bot) = (pts[0], pts[1], pts[2]);
 
         if      top.y == middle.y { self.fill_top_flat_triangle(t); }
         else if middle.y == bot.y { self.fill_bottom_flat_triangle(t); }
@@ -141,7 +142,7 @@ impl<S> Renderer<S>
     }
 
     fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
-        let (top, mut left, mut right) = (t[0], t[1], t[2]);
+        let (top, mut left, mut right) = t.to_tuple();
         if left.x > right.x { mem::swap(&mut left, &mut right) }
         let invslope1 = (left.x - top.x)  / (left.y - top.y);
         let invslope2 = (right.x - top.x) / (right.y - top.y);
@@ -168,7 +169,7 @@ impl<S> Renderer<S>
     }
 
     fn fill_top_flat_triangle(&mut self, t: Triangle) {
-        let (mut left, mut right, bot) = (t[0], t[1], t[2]);
+        let (mut left, mut right, bot) = t.to_tuple();
         if left.x > right.x { mem::swap(&mut left, &mut right) }
         let invslope1 = (bot.x - left.x)  / (bot.y - left.y);
         let invslope2 = (bot.x - right.x) / (bot.y - right.y);
