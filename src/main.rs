@@ -5,6 +5,7 @@ use sdl2::keyboard::Keycode;
 
 use std::cmp::min;
 use std::error;
+use std::path::Path;
 use std::process;
 use std::thread;
 use std::time::Duration;
@@ -43,6 +44,8 @@ const NANOS_PER_SECOND: u32 = 1_000_000_000;
 const FRAME_LEN_NANOS:  u32 = NANOS_PER_SECOND / TARGET_FPS;
 const TIME_PER_TICK:    f64 = 1. / (TARGET_FPS as f64);
 
+const RES_DIR_PATH: &'static str = "res";
+
 fn main() {
     // Initialize screen.
     let sdl_context = sdl2::init().unwrap();
@@ -68,27 +71,7 @@ fn main() {
     });
 
     // Set up render objects.
-    let mut objects: Vec<Object> = {
-        let mut objects = Vec::new();
-        let mut squares = Object::new(vec![
-            trigon![
-                pt_2d![-1., -1.],
-                pt_2d![-1.,  1.],
-                pt_2d![ 1., -1.]
-            ],
-            trigon![
-                pt_2d![ 1.,  1. ],
-                pt_2d![-0.9, 1. ],
-                pt_2d![ 1., -0.9]
-            ]
-        ]);
-        let size = 1.5;
-        squares.scale(size, size, size);
-        squares.translate(pt![0., 0., -4.]);
-        objects.push(squares);
-
-        objects
-    };
+    let mut objects: Vec<Object> = main_try!(init_objects());
 
     // State variables.
     let mut paused = false;
@@ -156,4 +139,17 @@ fn main() {
 fn error(err: &error::Error) {
     println!("error: {}", err);
     process::exit(-1);
+}
+
+fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
+    let mut objects = Vec::new();
+    let mut squares = Object::from_file(
+        &Path::new(RES_DIR_PATH).join("cube.tri")
+    )?;
+    let size = 1.5;
+    squares.scale(size, size, size);
+    squares.translate(pt![0., 0., -4.]);
+    objects.push(squares);
+
+    Ok(objects)
 }
