@@ -69,9 +69,9 @@ fn main() {
                 pt_2d![ 1., -0.9]
             ]
         ]);
-        let size = 0.8;
+        let size = 1.5;
         squares.scale(size, size, size);
-        squares.translate(pt![0., 0., -2.]);
+        squares.translate(pt![0., 0., -4.]);
         objects.push(squares);
 
         objects
@@ -81,6 +81,7 @@ fn main() {
     let mut paused = false;
     let mut step = false;
     let mut frame_dirty = true;
+    let mut time = 0.;
     renderer.set_transform({
         let screen_scale = (min(SCREEN_WIDTH, SCREEN_HEIGHT) / 2) as f64;
 
@@ -117,11 +118,13 @@ fn main() {
             }
         }
 
-        if !paused || step {
+        if step || !paused {
             step = false;
 
             // Update stuff.
-            objects[0].rotate_y(0.01);
+            let dtime = 1. / (TARGET_FPS as f64);
+            time += dtime;
+            objects[0].rotate_y(dtime);
             frame_dirty = true;
 
             // Draw stuff.

@@ -79,6 +79,18 @@ macro_rules! pt {
     ( $x:expr, $y:expr, $z:expr ) => { Point { x: $x, y: $y, z: $z }}
 }
 
+impl ops::Mul<Coord> for Point {
+    type Output = Point;
+
+    fn mul(self, other: Coord) -> Point {
+        pt!(
+            self.x * other,
+            self.y * other,
+            self.z * other
+        )
+    }
+}
+
 impl ops::Add for Point {
     type Output = Point;
 
