@@ -28,6 +28,12 @@ impl Triangle {
     pub fn to_arr(self) -> [Point; 3] {
         [self.p1, self.p2, self.p3]
     }
+
+    pub fn normal(self) -> Point {
+        let d1 = self.p2 - self.p1;
+        let d2 = self.p3 - self.p1;
+        d1.cross(d2).normalized()
+    }
 }
 
 impl ops::Mul<Transform> for Triangle {
