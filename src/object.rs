@@ -51,7 +51,7 @@ impl Object {
             pts.push(Point::from_vec(
                 line.split(' ')
                     .filter(|s| s.len() > 0)
-                    .map(|s| s.parse::<f64>())
+                    .map(|s| s.parse::<Coord>())
                     .collect::<Result<Vec<_>, _>>()?
             ));
 

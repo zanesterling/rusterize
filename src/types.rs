@@ -7,9 +7,9 @@ pub type Dimension = u32;
 
 #[derive(Clone, Copy)]
 pub struct Triangle {
-    p1: Point,
-    p2: Point,
-    p3: Point,
+    pub p1: Point,
+    pub p2: Point,
+    pub p3: Point,
 }
 
 macro_rules! trigon {
@@ -52,7 +52,25 @@ pub struct Point {
     pub z: Coord,
 }
 
+macro_rules! pt_2d {
+    ( $x:expr, $y:expr ) => { pt![$x, $y, 0.] }
+}
+
+macro_rules! pt {
+    ( $x:expr, $y:expr, $z:expr ) => { Point { x: $x, y: $y, z: $z }}
+}
+
 impl Point {
+    pub fn from_vec(mut v: Vec<Coord>) -> Point {
+        while v.len() < DIM { v.push(0.); }
+        if v.len() < DIM + 1 { v.push(1.); }
+        Point {
+            x: v[0] / v[DIM],
+            y: v[1] / v[DIM],
+            z: v[2] / v[DIM]
+        }
+    }
+
     pub fn from_array(arr: [f64; DIM + 1]) -> Point {
         Point {
             x: arr[0] / arr[DIM],
@@ -69,16 +87,35 @@ impl Point {
             1.
         ]
     }
+
+    pub fn dot(self, other: Point) -> f64 {
+        self.x * other.x +
+        self.y * other.y +
+        self.z * other.z
+    }
+
+    pub fn cross(self, other: Point) -> Point {
+        pt![
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x
+        ]
+    }
+
+    pub fn magnitude(self) -> f64 {
+        (
+            self.x * self.x +
+            self.y * self.y +
+            self.z * self.z
+        ).sqrt()
+    }
+
+    pub fn normalized(self) -> Point {
+        self * (1. / self.magnitude())
+    }
 }
 
-macro_rules! pt_2d {
-    ( $x:expr, $y:expr ) => { pt![$x, $y, 0.] }
-}
-
-macro_rules! pt {
-    ( $x:expr, $y:expr, $z:expr ) => { Point { x: $x, y: $y, z: $z }}
-}
-
+// Scaling
 impl ops::Mul<Coord> for Point {
     type Output = Point;
 
@@ -91,9 +128,9 @@ impl ops::Mul<Coord> for Point {
     }
 }
 
+// Point addition
 impl ops::Add for Point {
     type Output = Point;
-
     fn add(self, other: Point) -> Point {
         pt!(
             self.x + other.x,
@@ -103,6 +140,19 @@ impl ops::Add for Point {
     }
 }
 
+// Point subtraction
+impl ops::Sub for Point {
+    type Output = Point;
+    fn sub(self, other: Point) -> Point {
+        pt!(
+            self.x - other.x,
+            self.y - other.y,
+            self.z - other.z
+        )
+    }
+}
+
+// Matrix transformation
 impl ops::Mul<Transform> for Point {
     type Output = Point;
 

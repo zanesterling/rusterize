@@ -17,6 +17,8 @@ pub struct Renderer<S>
 
     transform: Transform,
     color: Pixel,
+
+    light: Point,
 }
 
 #[allow(dead_code)]
@@ -33,6 +35,8 @@ impl<S> Renderer<S>
 
             transform: Transform::identity(),
             color: pixel::WHITE,
+
+            light: pt![0., 0., 0.],
         }
     }
 
@@ -114,7 +118,13 @@ impl<S> Renderer<S>
     }
 
     pub fn fill_triangle(&mut self, t: Triangle) {
+        let normal = {
+            let d1 = t.p2 - t.p1;
+            let d2 = t.p3 - t.p1;
+            d1.cross(d2).normalized()
+        };
         let t = t * self.transform;
+        let centroid = (t.p1 + t.p2 + t.p3) * (1. / 3.);
         let mut pts = t.to_arr();
         pts.sort_by(
             |p1, p2|
@@ -122,6 +132,19 @@ impl<S> Renderer<S>
                 .unwrap_or(Equal)
         );
         let (top, middle, bot) = (pts[0], pts[1], pts[2]);
+
+        // Compute color of triangle based on light.
+        let old_color = self.color;
+        self.color = {
+            let light_dir = (self.light - centroid).normalized();
+            let light_mag = light_dir.dot(normal).max(0.);
+            let (r, g, b) = self.color;
+            (
+                (r as f64 * light_mag) as u8,
+                (g as f64 * light_mag) as u8,
+                (b as f64 * light_mag) as u8
+            )
+        };
 
         if      top.y == middle.y { self.fill_top_flat_triangle(t); }
         else if middle.y == bot.y { self.fill_bottom_flat_triangle(t); }
@@ -139,6 +162,7 @@ impl<S> Renderer<S>
             self.fill_bottom_flat_triangle(trigon![top, middle, v4]);
             self.fill_top_flat_triangle(trigon![middle, v4, bot]);
         }
+        self.color = old_color;
     }
 
     fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
@@ -231,4 +255,6 @@ impl<S> Renderer<S>
 
 
     pub fn set_color(&mut self, color: Pixel) { self.color = color; }
+
+    pub fn set_light_pos(&mut self, pos: Point) { self.light = pos; }
 }

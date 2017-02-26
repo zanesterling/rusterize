@@ -70,12 +70,13 @@ fn main() {
         * Transform::perspective()
     });
 
-    // Set up render objects.
+    // Set up scene.
     let mut objects: Vec<Object> = main_try!(init_objects());
+    renderer.set_light_pos(pt![10., 5., 5.]);
 
     // State variables.
     let mut paused = false;
-    let mut step = false;
+    let mut step = true;
     let mut frame_dirty = true;
     let mut time = 0.;
 
