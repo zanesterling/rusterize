@@ -22,7 +22,7 @@ impl Texture {
             w: w,
             h: h,
             pixels: vec![pixel::BLACK;  num_pixels],
-            depths: vec![f64::NEG_INFINITY; num_pixels],
+            depths: vec![f64::INFINITY; num_pixels],
         }
     }
 
@@ -46,7 +46,7 @@ impl Texture {
         color: Pixel
     ) {
         let index = y as usize * self.w as usize + x as usize;
-        //if depth >= self.depths[index] { return }
+        if depth >= self.depths[index] { return }
         self.depths[index] = depth;
         self.pixels[index] = color;
     }
@@ -70,7 +70,6 @@ impl Texture {
         for x in start .. end + 1 {
             let t = ((x - x1) as f64) / ((x2 - x1) as f64);
             let d = d1 * (1. - t) + d2 * t;
-            let d = d1;
             self.set_pixel_nocheck(x, y, d, color);
         }
     }
@@ -84,7 +83,7 @@ impl Texture {
     pub fn clear(&mut self) {
         for i in 0 .. self.pixels.len() {
             self.pixels[i] = pixel::BLACK;
-            self.depths[i] = f64::NEG_INFINITY;
+            self.depths[i] = f64::INFINITY;
         }
     }
 }
