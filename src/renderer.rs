@@ -197,6 +197,10 @@ impl<S> Renderer<S>
     }
 
 
+    pub fn set_transform(&mut self, t: Transform) {
+        self.transform = t;
+    }
+
     pub fn clear_transform(&mut self) {
         self.transform = Transform::identity();
     }

@@ -3,6 +3,7 @@ extern crate sdl2;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
+use std::cmp::min;
 use std::error;
 use std::process;
 use std::thread;
@@ -54,8 +55,9 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     // Set up render objects.
-    let objects = vec![
-        Object::new(vec![
+    let mut objects: Vec<Object> = {
+        let mut objects = Vec::new();
+        let mut squares = Object::new(vec![
             trigon![
                 pt_2d![-1., -1.],
                 pt_2d![-1.,  1.],
@@ -66,14 +68,29 @@ fn main() {
                 pt_2d![-0.9, 1. ],
                 pt_2d![ 1., -0.9]
             ]
-        ])
-    ];
+        ]);
+        let size = 0.8;
+        squares.scale(size, size, size);
+        squares.translate(pt![0., 0., -2.]);
+        objects.push(squares);
+
+        objects
+    };
 
     // State variables.
     let mut paused = false;
     let mut step = false;
     let mut frame_dirty = true;
-    let mut theta = 0.0;
+    renderer.set_transform({
+        let screen_scale = (min(SCREEN_WIDTH, SCREEN_HEIGHT) / 2) as f64;
+
+        Transform::translate(pt_2d![
+            (SCREEN_WIDTH  / 2) as Coord,
+            (SCREEN_HEIGHT / 2) as Coord
+        ])
+        * Transform::scale(screen_scale, screen_scale, 1.)
+        * Transform::perspective()
+    });
 
     // Main loop.
     'main_loop: loop {
@@ -104,22 +121,11 @@ fn main() {
             step = false;
 
             // Update stuff.
-            theta += 0.01;
+            objects[0].rotate_y(0.01);
             frame_dirty = true;
 
             // Draw stuff.
             if frame_dirty {
-                // Set transformation.
-                renderer.clear_transform();
-                renderer.rotate_y(theta);
-                renderer.translate(pt![0., 0., -2.]);
-                renderer.perspective();
-                renderer.scale(200., 200., 1.);
-                renderer.translate(pt_2d![
-                    (SCREEN_WIDTH  / 2) as Coord,
-                    (SCREEN_HEIGHT / 2) as Coord
-                ]);
-
                 // Render image.
                 renderer.clear();
                 for object in &objects {
