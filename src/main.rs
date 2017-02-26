@@ -98,7 +98,7 @@ fn main() {
                 renderer.perspective();
                 renderer.scale(200., 200., 1.);
                 renderer.translate(pt_2d![
-                    (SCREEN_WIDTH / 2)  as Coord,
+                    (SCREEN_WIDTH  / 2) as Coord,
                     (SCREEN_HEIGHT / 2) as Coord
                 ]);
 
