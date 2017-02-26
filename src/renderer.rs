@@ -143,12 +143,12 @@ impl<S> Renderer<S>
     fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
         let (top, mut left, mut right) = (t[0], t[1], t[2]);
         if left.x > right.x { mem::swap(&mut left, &mut right) }
-        let invslope1 = (left.x - top.x) as f64 / (left.y - top.y) as f64;
-        let invslope2 = (right.x - top.x) as f64 / (right.y - top.y) as f64;
-        let mut curx1 = top.x as f64;
-        let mut curx2 = top.x as f64;
+        let invslope1 = (left.x - top.x)  / (left.y - top.y);
+        let invslope2 = (right.x - top.x) / (right.y - top.y);
+        let mut curx1 = top.x;
+        let mut curx2 = top.x;
 
-        for y in top.y as PixCoord .. left.y as PixCoord + 1 {
+        for y in top.y as PixCoord .. left.y as PixCoord {
             self.texture.set_row(
                 curx1 as PixCoord,
                 curx2 as PixCoord,
@@ -158,15 +158,22 @@ impl<S> Renderer<S>
             curx1 += invslope1;
             curx2 += invslope2;
         }
+
+        self.texture.set_row(
+            left.x  as PixCoord,
+            right.x as PixCoord,
+            left.y  as PixCoord,
+            self.color
+        );
     }
 
     fn fill_top_flat_triangle(&mut self, t: Triangle) {
         let (mut left, mut right, bot) = (t[0], t[1], t[2]);
         if left.x > right.x { mem::swap(&mut left, &mut right) }
-        let invslope1 = (bot.x - left.x)  as f64 / (bot.y - left.y)  as f64;
-        let invslope2 = (bot.x - right.x) as f64 / (bot.y - right.y) as f64;
-        let mut curx1 = left.x  as f64;
-        let mut curx2 = right.x as f64;
+        let invslope1 = (bot.x - left.x)  / (bot.y - left.y);
+        let invslope2 = (bot.x - right.x) / (bot.y - right.y);
+        let mut curx1 = left.x;
+        let mut curx2 = right.x;
 
         for y in left.y as PixCoord .. bot.y as PixCoord + 1 {
             self.texture.set_row(
