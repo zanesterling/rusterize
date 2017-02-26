@@ -1,5 +1,6 @@
 use std::cmp::Ordering::Equal;
 use std::error;
+use std::f64;
 use std::mem;
 
 use pixel;
@@ -48,6 +49,8 @@ impl<S> Renderer<S>
                 p.x as PixCoord - d / 2,
                 p.x as PixCoord + d / 2,
                 p.y as PixCoord + row - d / 2,
+                -p.z,
+                -p.z,
                 self.color
             );
         }
@@ -93,7 +96,13 @@ impl<S> Renderer<S>
                 error += adx;
             }
 
-            self.texture.set_pixel(x, y, self.color);
+            // FIXME: Do depth lerping.
+            self.texture.set_pixel(
+                x,
+                y,
+                f64::INFINITY,
+                self.color
+            );
 
             if adx >= ady {
                 if x == p2x { break }
@@ -118,14 +127,11 @@ impl<S> Renderer<S>
     }
 
     pub fn fill_triangle(&mut self, t: Triangle) {
-        let normal = {
-            let d1 = t.p2 - t.p1;
-            let d2 = t.p3 - t.p1;
-            d1.cross(d2).normalized()
-        };
-        let t = t * self.transform;
         let centroid = (t.p1 + t.p2 + t.p3) * (1. / 3.);
-        let mut pts = t.to_arr();
+        let ct = t * self.transform;
+        if ct.normal().dot(centroid) >= 0. { return }
+
+        let mut pts = ct.to_arr();
         pts.sort_by(
             |p1, p2|
             p1.y.partial_cmp(&p2.y)
@@ -135,9 +141,9 @@ impl<S> Renderer<S>
 
         // Compute color of triangle based on light.
         let old_color = self.color;
-        self.color = {
+        self.color = pixel::WHITE; {
             let light_dir = (self.light - centroid).normalized();
-            let light_mag = light_dir.dot(normal).max(0.);
+            let light_mag = light_dir.dot(t.normal()).max(0.);
             let (r, g, b) = self.color;
             (
                 (r as f64 * light_mag) as u8,
@@ -146,8 +152,8 @@ impl<S> Renderer<S>
             )
         };
 
-        if      top.y == middle.y { self.fill_top_flat_triangle(t); }
-        else if middle.y == bot.y { self.fill_bottom_flat_triangle(t); }
+        if      top.y == middle.y { self.fill_top_flat_triangle(ct); }
+        else if middle.y == bot.y { self.fill_bottom_flat_triangle(ct); }
         else {
             let dy_middle = (middle.y - top.y) as f64;
             let dy_bot = (bot.y - top.y) as f64;
@@ -174,20 +180,30 @@ impl<S> Renderer<S>
         let mut curx2 = top.x;
 
         for y in top.y as PixCoord .. left.y as PixCoord {
+            let t       = (y as Coord - top.y) / (left.y - top.y);
+            let z_left  = left.z  * t + top.z * (1. - t);
+            let z_right = right.z * t + top.z * (1. - t);
+
             self.texture.set_row(
                 curx1 as PixCoord,
                 curx2 as PixCoord,
                 y,
+                -z_left,
+                -z_right,
                 self.color
             );
             curx1 += invslope1;
             curx2 += invslope2;
         }
 
+        let t_right = (left.y - top.y) / (right.y - top.y);
+        let z_right = right.z * t_right + top.z * (1. - t_right);
         self.texture.set_row(
             left.x  as PixCoord,
             right.x as PixCoord,
             left.y  as PixCoord,
+            -left.z,
+            -z_right,
             self.color
         );
     }
@@ -201,10 +217,16 @@ impl<S> Renderer<S>
         let mut curx2 = right.x;
 
         for y in left.y as PixCoord .. bot.y as PixCoord + 1 {
+            let t       = (y as Coord - left.y) / (bot.y - left.y);
+            let z_left  = t + bot.z * t + left.z  * (1. - t);
+            let z_right = t + bot.z * t + right.z * (1. - t);
+
             self.texture.set_row(
                 curx1 as PixCoord,
                 curx2 as PixCoord,
                 y,
+                -z_left,
+                -z_right,
                 self.color
             );
             curx1 += invslope1;
@@ -213,7 +235,7 @@ impl<S> Renderer<S>
     }
 
     pub fn clear(&mut self) {
-        self.texture.set_all_pixels(pixel::BLACK);
+        self.texture.clear();
     }
 
     pub fn display(&mut self) -> Result<(), Box<error::Error>> {

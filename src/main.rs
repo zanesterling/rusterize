@@ -72,10 +72,10 @@ fn main() {
 
     // Set up scene.
     let mut objects: Vec<Object> = main_try!(init_objects());
-    renderer.set_light_pos(pt![10., 5., 5.]);
+    renderer.set_light_pos(pt![0., 0., 10.]);
 
     // State variables.
-    let mut paused = false;
+    let mut paused = true;
     let mut step = true;
     let mut frame_dirty = true;
     let mut time = 0.;
