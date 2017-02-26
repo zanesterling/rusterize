@@ -41,6 +41,7 @@ const SCREEN_HEIGHT: u32 = 600;
 const TARGET_FPS:       u32 = 60;
 const NANOS_PER_SECOND: u32 = 1_000_000_000;
 const FRAME_LEN_NANOS:  u32 = NANOS_PER_SECOND / TARGET_FPS;
+const TIME_PER_TICK:    f64 = 1. / (TARGET_FPS as f64);
 
 fn main() {
     // Initialize screen.
@@ -53,6 +54,18 @@ fn main() {
     ));
     let mut renderer = Renderer::new(screen);
     let mut event_pump = sdl_context.event_pump().unwrap();
+
+
+    // Set perspective transform.
+    renderer.set_transform({
+        let screen_scale = (min(SCREEN_WIDTH, SCREEN_HEIGHT) / 2) as f64;
+        Transform::translate(pt_2d![
+            (SCREEN_WIDTH  / 2) as Coord,
+            (SCREEN_HEIGHT / 2) as Coord
+        ])
+        * Transform::scale(screen_scale, screen_scale, 1.)
+        * Transform::perspective()
+    });
 
     // Set up render objects.
     let mut objects: Vec<Object> = {
@@ -82,16 +95,6 @@ fn main() {
     let mut step = false;
     let mut frame_dirty = true;
     let mut time = 0.;
-    renderer.set_transform({
-        let screen_scale = (min(SCREEN_WIDTH, SCREEN_HEIGHT) / 2) as f64;
-
-        Transform::translate(pt_2d![
-            (SCREEN_WIDTH  / 2) as Coord,
-            (SCREEN_HEIGHT / 2) as Coord
-        ])
-        * Transform::scale(screen_scale, screen_scale, 1.)
-        * Transform::perspective()
-    });
 
     // Main loop.
     'main_loop: loop {
@@ -122,9 +125,8 @@ fn main() {
             step = false;
 
             // Update stuff.
-            let dtime = 1. / (TARGET_FPS as f64);
-            time += dtime;
-            objects[0].rotate_y(dtime);
+            time += TIME_PER_TICK;
+            objects[0].rotate_y(TIME_PER_TICK);
             frame_dirty = true;
 
             // Draw stuff.
