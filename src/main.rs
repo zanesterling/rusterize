@@ -111,8 +111,8 @@ fn main() {
                 ]);
                 renderer.fill_triangle([
                     pt_2d![ 1.,  1.],
-                    pt_2d![-1.,  1.],
-                    pt_2d![ 1., -1.],
+                    pt_2d![-0.9,  1.],
+                    pt_2d![ 1., -0.9],
                 ]);
                 main_try!(renderer.display());
 

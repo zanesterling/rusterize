@@ -81,6 +81,7 @@ pub struct Transform {
     data: [[f64; DIM + 1]; DIM + 1]
 }
 
+#[allow(dead_code)]
 impl Transform {
     pub fn identity() -> Transform {
         let mut data = [[0.0; DIM + 1]; DIM + 1];

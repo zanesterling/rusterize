@@ -113,7 +113,7 @@ impl<S> Renderer<S>
         self.transform = old_transform;
     }
 
-    pub fn fill_triangle(&mut self, mut t: Triangle) {
+    pub fn fill_triangle(&mut self, t: Triangle) {
         let mut t = trigon![
             t[0] * self.transform,
             t[1] * self.transform,
@@ -122,7 +122,7 @@ impl<S> Renderer<S>
         t.sort_by( |p1, p2| p1.y.partial_cmp(&p2.y).unwrap_or(Equal));
         let (top, middle, bot) = (t[0], t[1], t[2]);
 
-        if top.y == middle.y      { self.fill_top_flat_triangle(t); }
+        if      top.y == middle.y { self.fill_top_flat_triangle(t); }
         else if middle.y == bot.y { self.fill_bottom_flat_triangle(t); }
         else {
             let dy_middle = (middle.y - top.y) as f64;
