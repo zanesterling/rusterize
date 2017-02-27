@@ -10,6 +10,16 @@ use texture::Texture;
 use types::*;
 
 
+macro_rules! do_with_color {
+    ( $renderer:expr, $color:expr, $block:block ) => {
+        let old_color = $renderer.color;
+        $renderer.color = $color;
+        $block;
+        $renderer.color = old_color;
+    }
+}
+
+
 pub struct Renderer<S>
     where S: Screen
 {
@@ -49,8 +59,8 @@ impl<S> Renderer<S>
                 p.x as PixCoord - d / 2,
                 p.x as PixCoord + d / 2,
                 p.y as PixCoord + row - d / 2,
-                -p.z,
-                -p.z,
+                f64::NEG_INFINITY,
+                f64::NEG_INFINITY,
                 self.color
             );
         }
@@ -127,10 +137,12 @@ impl<S> Renderer<S>
     }
 
     pub fn fill_triangle(&mut self, t: Triangle) {
+        // Backface culling.
         let centroid = (t.p1 + t.p2 + t.p3) * (1. / 3.);
         let ct = t * self.transform;
         if ct.normal().dot(centroid) >= 0. { return }
 
+        // Sort points by y coord.
         let mut pts = ct.to_arr();
         pts.sort_by(
             |p1, p2|
@@ -155,83 +167,81 @@ impl<S> Renderer<S>
         if      top.y == middle.y { self.fill_top_flat_triangle(ct); }
         else if middle.y == bot.y { self.fill_bottom_flat_triangle(ct); }
         else {
-            let dy_middle = (middle.y - top.y) as f64;
-            let dy_bot = (bot.y - top.y) as f64;
-            let dx_bot = (bot.x - top.x) as f64;
-            let dz_bot = (bot.z - top.z) as f64;
+            let dy_mid: Coord = middle.y - top.y;
+            let dy_bot: Coord = bot.y - top.y;
+            let dx_bot: Coord = bot.x - top.x;
+            let dz_bot: Coord = bot.z - top.z;
 
             let v4 = pt![
-                top.x + ((dy_middle / dy_bot) * dx_bot) as Coord,
+                top.x + dx_bot * dy_mid / dy_bot,
                 middle.y,
-                top.z + ((dy_middle / dy_bot) * dz_bot) as Coord
+                top.z + dz_bot * dy_mid / dy_bot
             ];
             self.fill_bottom_flat_triangle(trigon![top, middle, v4]);
             self.fill_top_flat_triangle(trigon![middle, v4, bot]);
         }
+
         self.color = old_color;
     }
 
     fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
+        let old_color = self.color;
+        self.color = pixel::RED;
+
         let (top, mut left, mut right) = t.to_tuple();
         if left.x > right.x { mem::swap(&mut left, &mut right) }
-        let invslope1 = (left.x - top.x)  / (left.y - top.y);
-        let invslope2 = (right.x - top.x) / (right.y - top.y);
-        let mut curx1 = top.x;
-        let mut curx2 = top.x;
 
         for y in top.y as PixCoord .. left.y as PixCoord {
-            let t       = (y as Coord - top.y) / (left.y - top.y);
-            let z_left  = left.z  * t + top.z * (1. - t);
-            let z_right = right.z * t + top.z * (1. - t);
+            let t       = (y - top.y as PixCoord) as Coord / (left.y - top.y);
+            let z_left  = top.z + t * (left.z - top.z);
+            let z_right = top.z + t * (right.z - top.z);
 
             self.texture.set_row(
-                curx1 as PixCoord,
-                curx2 as PixCoord,
+                (top.x + (left.x  - top.x) * t) as PixCoord,
+                (top.x + (right.x - top.x) * t) as PixCoord,
                 y,
-                -z_left,
-                -z_right,
+                z_left,
+                z_right,
                 self.color
             );
-            curx1 += invslope1;
-            curx2 += invslope2;
         }
 
-        let t_right = (left.y - top.y) / (right.y - top.y);
-        let z_right = right.z * t_right + top.z * (1. - t_right);
-        self.texture.set_row(
-            left.x  as PixCoord,
-            right.x as PixCoord,
-            left.y  as PixCoord,
-            -left.z,
-            -z_right,
-            self.color
-        );
+        do_with_color!(self, pixel::BLUE, {
+            self.draw_point_with_transform(top, Transform::identity());
+            self.draw_point_with_transform(left, Transform::identity());
+            self.draw_point_with_transform(right, Transform::identity());
+        });
+        self.color = old_color;
     }
 
     fn fill_top_flat_triangle(&mut self, t: Triangle) {
+        let old_color = self.color;
+        self.color = pixel::GREEN;
+
         let (mut left, mut right, bot) = t.to_tuple();
         if left.x > right.x { mem::swap(&mut left, &mut right) }
-        let invslope1 = (bot.x - left.x)  / (bot.y - left.y);
-        let invslope2 = (bot.x - right.x) / (bot.y - right.y);
-        let mut curx1 = left.x;
-        let mut curx2 = right.x;
 
         for y in left.y as PixCoord .. bot.y as PixCoord + 1 {
-            let t       = (y as Coord - left.y) / (bot.y - left.y);
-            let z_left  = t + bot.z * t + left.z  * (1. - t);
-            let z_right = t + bot.z * t + right.z * (1. - t);
+            let t       = (y - left.y as PixCoord) as Coord / (bot.y - left.y);
+            let z_left  = left.z  + t * (bot.z - left.z);
+            let z_right = right.z + t * (bot.z - right.z);
 
             self.texture.set_row(
-                curx1 as PixCoord,
-                curx2 as PixCoord,
+                (left.x  + (bot.x - left.x)  * t) as PixCoord,
+                (right.x + (bot.x - right.x) * t) as PixCoord,
                 y,
-                -z_left,
-                -z_right,
+                z_left,
+                z_right,
                 self.color
             );
-            curx1 += invslope1;
-            curx2 += invslope2;
         }
+
+        do_with_color!(self, pixel::BLUE, {
+            self.draw_point_with_transform(left, Transform::identity());
+            self.draw_point_with_transform(right, Transform::identity());
+            self.draw_point_with_transform(bot, Transform::identity());
+        });
+        self.color = old_color;
     }
 
     pub fn clear(&mut self) {

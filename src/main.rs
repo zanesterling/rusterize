@@ -5,6 +5,7 @@ use sdl2::keyboard::Keycode;
 
 use std::cmp::min;
 use std::error;
+use std::f64;
 use std::path::Path;
 use std::process;
 use std::thread;
@@ -72,7 +73,7 @@ fn main() {
 
     // Set up scene.
     let mut objects: Vec<Object> = main_try!(init_objects());
-    renderer.set_light_pos(pt![0., 0., 10.]);
+    renderer.set_light_pos(pt![10., 0., 10.]);
 
     // State variables.
     let mut paused = true;
@@ -147,9 +148,10 @@ fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
     let mut squares = Object::from_file(
         &Path::new(RES_DIR_PATH).join("cube.tri")
     )?;
-    let size = 1.5;
+    let size = 3.;
     squares.scale(size, size, size);
-    squares.translate(pt![0., 0., -4.]);
+    squares.translate(pt![0., 0., -10.]);
+    squares.rotate_x(f64::consts::PI / 4.);
     objects.push(squares);
 
     Ok(objects)

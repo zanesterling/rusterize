@@ -12,7 +12,7 @@ pub struct Texture {
     pub w: Dimension,
     pub h: Dimension,
     pub pixels: Vec<Pixel>,
-    depths:     Vec<Coord>,
+    z_buffer:   Vec<Coord>,
 }
 
 impl Texture {
@@ -21,8 +21,8 @@ impl Texture {
         Texture {
             w: w,
             h: h,
-            pixels: vec![pixel::BLACK;  num_pixels],
-            depths: vec![f64::INFINITY; num_pixels],
+            pixels:   vec![pixel::BLACK;  num_pixels],
+            z_buffer: vec![f64::INFINITY; num_pixels],
         }
     }
 
@@ -30,25 +30,25 @@ impl Texture {
         &mut self,
         x: PixCoord,
         y: PixCoord,
-        depth: Coord,
+        z: Coord,
         color: Pixel
     ) {
         if x < 0 || y < 0 { return }
         if self.w < x as Dimension || self.h < y as Dimension { return }
-        self.set_pixel_nocheck(x, y, depth, color)
+        self.set_pixel_nocheck(x, y, z, color)
     }
 
     pub fn set_pixel_nocheck(
         &mut self,
         x: PixCoord,
         y: PixCoord,
-        depth: Coord,
+        z: Coord,
         color: Pixel
     ) {
         let index = y as usize * self.w as usize + x as usize;
-        if depth >= self.depths[index] { return }
-        self.depths[index] = depth;
-        self.pixels[index] = color;
+        if z >= self.z_buffer[index] { return }
+        self.z_buffer[index] = z;
+        self.pixels[index]   = color;
     }
 
     pub fn set_row(
@@ -56,8 +56,8 @@ impl Texture {
         x1: PixCoord,
         x2: PixCoord,
         y:  PixCoord,
-        d1: Coord,
-        d2: Coord,
+        z1: Coord,
+        z2: Coord,
         color: Pixel
     ) {
         if y  < 0 || y  as Dimension >= self.h { return }
@@ -65,12 +65,13 @@ impl Texture {
 
         let start = clamp(x1, 0, (self.w - 1) as PixCoord);
         let end   = clamp(x2, 0, (self.w - 1) as PixCoord);
-        let y  = y;
+        let y     = y;
 
+        if x2 <= x1 { return }
         for x in start .. end + 1 {
             let t = ((x - x1) as f64) / ((x2 - x1) as f64);
-            let d = d1 * (1. - t) + d2 * t;
-            self.set_pixel_nocheck(x, y, d, color);
+            let z = z1 * (1. - t) + z2 * t;
+            self.set_pixel_nocheck(x, y, z, color);
         }
     }
 
@@ -82,8 +83,8 @@ impl Texture {
 
     pub fn clear(&mut self) {
         for i in 0 .. self.pixels.len() {
-            self.pixels[i] = pixel::BLACK;
-            self.depths[i] = f64::INFINITY;
+            self.pixels[i]   = pixel::BLACK;
+            self.z_buffer[i] = f64::INFINITY;
         }
     }
 }
