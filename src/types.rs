@@ -21,6 +21,10 @@ impl Triangle {
         Triangle { p1:p1, p2:p2, p3:p3 }
     }
 
+    pub fn from_arr(arr: [Point; 3]) -> Triangle {
+        Triangle { p1:arr[0], p2:arr[1], p3:arr[2] }
+    }
+
     pub fn to_tuple(self) -> (Point, Point, Point) {
         (self.p1, self.p2, self.p3)
     }

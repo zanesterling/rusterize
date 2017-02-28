@@ -153,7 +153,7 @@ impl<S> Renderer<S>
 
         // Compute color of triangle based on light.
         let old_color = self.color;
-        self.color = pixel::WHITE; {
+        self.color = {
             let light_dir = (self.light - centroid).normalized();
             let light_mag = light_dir.dot(t.normal()).max(0.);
             let (r, g, b) = self.color;
@@ -164,9 +164,12 @@ impl<S> Renderer<S>
             )
         };
 
-        if      top.y == middle.y { self.fill_top_flat_triangle(ct); }
-        else if middle.y == bot.y { self.fill_bottom_flat_triangle(ct); }
-        else {
+        const EPSILON: f64 = 1.;
+        if middle.y - top.y < EPSILON {
+            self.fill_top_flat_triangle(Triangle::from_arr(pts));
+        } else if bot.y - middle.y < EPSILON {
+            self.fill_bottom_flat_triangle(Triangle::from_arr(pts));
+        } else {
             let dy_mid: Coord = middle.y - top.y;
             let dy_bot: Coord = bot.y - top.y;
             let dx_bot: Coord = bot.x - top.x;
@@ -185,15 +188,12 @@ impl<S> Renderer<S>
     }
 
     fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
-        let old_color = self.color;
-        self.color = pixel::RED;
-
         let (top, mut left, mut right) = t.to_tuple();
         if left.x > right.x { mem::swap(&mut left, &mut right) }
 
         for y in top.y as PixCoord .. left.y as PixCoord {
             let t       = (y - top.y as PixCoord) as Coord / (left.y - top.y);
-            let z_left  = top.z + t * (left.z - top.z);
+            let z_left  = top.z + t * (left.z  - top.z);
             let z_right = top.z + t * (right.z - top.z);
 
             self.texture.set_row(
@@ -205,19 +205,9 @@ impl<S> Renderer<S>
                 self.color
             );
         }
-
-        do_with_color!(self, pixel::BLUE, {
-            self.draw_point_with_transform(top, Transform::identity());
-            self.draw_point_with_transform(left, Transform::identity());
-            self.draw_point_with_transform(right, Transform::identity());
-        });
-        self.color = old_color;
     }
 
     fn fill_top_flat_triangle(&mut self, t: Triangle) {
-        let old_color = self.color;
-        self.color = pixel::GREEN;
-
         let (mut left, mut right, bot) = t.to_tuple();
         if left.x > right.x { mem::swap(&mut left, &mut right) }
 
@@ -235,13 +225,6 @@ impl<S> Renderer<S>
                 self.color
             );
         }
-
-        do_with_color!(self, pixel::BLUE, {
-            self.draw_point_with_transform(left, Transform::identity());
-            self.draw_point_with_transform(right, Transform::identity());
-            self.draw_point_with_transform(bot, Transform::identity());
-        });
-        self.color = old_color;
     }
 
     pub fn clear(&mut self) {

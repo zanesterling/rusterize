@@ -112,6 +112,7 @@ fn main() {
             // Update stuff.
             time += TIME_PER_TICK;
             objects[0].rotate_y(TIME_PER_TICK);
+            objects[0].rotate_x(TIME_PER_TICK);
             frame_dirty = true;
 
             // Draw stuff.
