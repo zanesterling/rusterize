@@ -140,7 +140,7 @@ fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
 
     objects.push({
         let size = 3.;
-        try!(Object::from_resource_file("cube.obj"))
+        Object::from_resource_file("cube.obj")?
             .scaled(size, size, size)
             .translated(pt![0., 0., -10.])
             .rotated_x(f64::consts::PI / 4.)
