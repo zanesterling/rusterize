@@ -76,7 +76,7 @@ fn main() {
     renderer.set_light_pos(pt![10., 0., 10.]);
 
     // State variables.
-    let mut paused = true;
+    let mut paused = false;
     let mut step = true;
     let mut frame_dirty = true;
     let mut time = 0.;
