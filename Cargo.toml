@@ -1,6 +1,6 @@
 [package]
 name = "rusterize"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Zane Sterling <sterling.zane@gmail.com>"]
 
 [profile.release]
@@ -10,5 +10,3 @@ debug = true
 
 [dependencies.sdl2]
 version = "0.29"
-default_features = false
-features = ["gfx"]
