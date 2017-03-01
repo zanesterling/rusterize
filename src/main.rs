@@ -147,7 +147,7 @@ fn error(err: &error::Error) {
 fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
     let mut objects = Vec::new();
     let mut squares = Object::from_file(
-        &Path::new(RES_DIR_PATH).join("cube.tri")
+        &Path::new(RES_DIR_PATH).join("cube.obj")
     )?;
     let size = 3.;
     squares.scale(size, size, size);
