@@ -4,6 +4,7 @@ use std::io;
 use std::io::BufRead;
 use std::path::Path;
 
+use consts;
 use renderer::Renderer;
 use screen::Screen;
 use types::*;
@@ -25,6 +26,12 @@ impl Object {
             scaling:     Transform::identity(),
             triangles: tris,
         }
+    }
+
+    pub fn from_resource_file(filename: &str)
+        -> Result<Object, Box<error::Error>>
+    {
+        Object::from_file(&Path::new(consts::RES_DIR_PATH).join(filename))
     }
 
     pub fn from_file(filename: &Path) -> Result<Object, Box<error::Error>> {
@@ -83,6 +90,7 @@ impl Object {
         self.translation * self.rotation * self.scaling
     }
 
+
     pub fn translate(&mut self, off: Point) {
         self.translation = Transform::translate(off) * self.translation;
     }
@@ -101,5 +109,31 @@ impl Object {
 
     pub fn rotate_z(&mut self, theta: f64) {
         self.rotation = Transform::rotate_z(theta) * self.rotation;
+    }
+
+
+    pub fn translated(mut self, off: Point) -> Object {
+        self.translation = Transform::translate(off) * self.translation;
+        self
+    }
+
+    pub fn scaled(mut self, x: f64, y: f64, z: f64) -> Object {
+        self.scaling = Transform::scale(x, y, z) * self.scaling;
+        self
+    }
+
+    pub fn rotated_x(mut self, theta: f64) -> Object {
+        self.rotation = Transform::rotate_x(theta) * self.rotation;
+        self
+    }
+
+    pub fn rotated_y(mut self, theta: f64) -> Object {
+        self.rotation = Transform::rotate_y(theta) * self.rotation;
+        self
+    }
+
+    pub fn rotated_z(mut self, theta: f64) -> Object {
+        self.rotation = Transform::rotate_z(theta) * self.rotation;
+        self
     }
 }

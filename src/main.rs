@@ -6,7 +6,6 @@ use sdl2::keyboard::Keycode;
 use std::cmp::min;
 use std::error;
 use std::f64;
-use std::path::Path;
 use std::process;
 use std::thread;
 use std::time::Duration;
@@ -14,6 +13,7 @@ use std::time::Instant;
 
 #[macro_use] mod types;
 
+mod consts;
 mod object;
 mod pixel;
 mod renderer;
@@ -21,6 +21,7 @@ mod screen;
 mod texture;
 mod utils;
 
+use consts::*;
 use object::Object;
 use renderer::Renderer;
 use types::*;
@@ -36,16 +37,6 @@ macro_rules! main_try {
     }}
 }
 
-
-const SCREEN_WIDTH:  u32 = 800;
-const SCREEN_HEIGHT: u32 = 600;
-
-const TARGET_FPS:       u32 = 60;
-const NANOS_PER_SECOND: u32 = 1_000_000_000;
-const FRAME_LEN_NANOS:  u32 = NANOS_PER_SECOND / TARGET_FPS;
-const TIME_PER_TICK:    f64 = 1. / (TARGET_FPS as f64);
-
-const RES_DIR_PATH: &'static str = "res";
 
 fn main() {
     // Initialize screen.
@@ -146,14 +137,14 @@ fn error(err: &error::Error) {
 
 fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
     let mut objects = Vec::new();
-    let mut squares = Object::from_file(
-        &Path::new(RES_DIR_PATH).join("cube.obj")
-    )?;
-    let size = 3.;
-    squares.scale(size, size, size);
-    squares.translate(pt![0., 0., -10.]);
-    squares.rotate_x(f64::consts::PI / 4.);
-    objects.push(squares);
+
+    objects.push({
+        let size = 3.;
+        try!(Object::from_resource_file("cube.obj"))
+            .scaled(size, size, size)
+            .translated(pt![0., 0., -10.])
+            .rotated_x(f64::consts::PI / 4.)
+    });
 
     Ok(objects)
 }
