@@ -1,10 +1,9 @@
 [package]
 name = "rusterize"
+description="A 3D renderer built from per-pixel access."
 version = "0.2.0"
 authors = ["Zane Sterling <sterling.zane@gmail.com>"]
-
-[profile.release]
-debug = true
+license = "MIT"
 
 [dependencies]
 
