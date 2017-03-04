@@ -12,6 +12,7 @@ pub struct Triangle {
     pub p3: Point,
 }
 
+#[macro_export]
 macro_rules! trigon {
     ( $p1:expr, $p2:expr, $p3:expr ) => { Triangle::new($p1, $p2, $p3) }
 }
@@ -62,10 +63,12 @@ pub struct Point {
     pub z: Coord,
 }
 
+#[macro_export]
 macro_rules! pt_2d {
     ( $x:expr, $y:expr ) => { pt![$x, $y, 0.] }
 }
 
+#[macro_export]
 macro_rules! pt {
     ( $x:expr, $y:expr, $z:expr ) => { Point { x: $x, y: $y, z: $z }}
 }

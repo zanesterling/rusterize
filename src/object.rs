@@ -4,7 +4,6 @@ use std::io;
 use std::io::BufRead;
 use std::path::Path;
 
-use consts;
 use renderer::Renderer;
 use screen::Screen;
 use types::*;
@@ -26,12 +25,6 @@ impl Object {
             scaling:     Transform::identity(),
             triangles: tris,
         }
-    }
-
-    pub fn from_resource_file(filename: &str)
-        -> Result<Object, Box<error::Error>>
-    {
-        Object::from_file(&Path::new(consts::RES_DIR_PATH).join(filename))
     }
 
     pub fn from_file(filename: &Path) -> Result<Object, Box<error::Error>> {

@@ -1,30 +1,25 @@
+#[macro_use] extern crate rusterize;
 extern crate sdl2;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
+use rusterize::object::Object;
+use rusterize::renderer::Renderer;
+use rusterize::screen;
+use rusterize::types::*;
+
 use std::cmp::min;
 use std::error;
 use std::f64;
+use std::path::Path;
 use std::process;
 use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 
-#[macro_use] mod types;
-
 mod consts;
-mod object;
-mod pixel;
-mod renderer;
-mod screen;
-mod texture;
-mod utils;
-
 use consts::*;
-use object::Object;
-use renderer::Renderer;
-use types::*;
 
 macro_rules! main_try {
     ($x:expr) => {{
@@ -140,11 +135,17 @@ fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
 
     objects.push({
         let size = 3.;
-        Object::from_resource_file("cube.obj")?
+        load_object_from_file("cube.obj")?
             .scaled(size, size, size)
-            .translated(pt![0., 0., -10.])
+            .translated(pt![0., 0., -20.])
             .rotated_x(f64::consts::PI / 4.)
     });
 
     Ok(objects)
+}
+
+fn load_object_from_file(filename: &str)
+    -> Result<Object, Box<error::Error>>
+{
+    Object::from_file(&Path::new(RES_DIR_PATH).join(filename))
 }
