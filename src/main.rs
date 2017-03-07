@@ -12,7 +12,6 @@ use rusterize::types::*;
 use std::cmp::min;
 use std::error;
 use std::f64;
-use std::path::Path;
 use std::process;
 
 
@@ -72,7 +71,11 @@ fn init<S: Screen>(renderer: &mut Renderer<S>)
     )
 }
 
-fn parse_event(loop_state: &mut rusterize::LoopState, event: Event) {
+fn parse_event(
+    loop_state: &mut rusterize::LoopState,
+    _: &mut WorldState,
+    event: Event
+) {
     match event {
         Event::Quit { .. } |
         Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
@@ -92,24 +95,26 @@ fn parse_event(loop_state: &mut rusterize::LoopState, event: Event) {
 }
 
 // Returns true if the frame is made dirty, else false.
-fn update(_: &mut rusterize::LoopState, world_state: &mut WorldState) -> bool {
-    // Update stuff.
+fn update(world_state: &mut WorldState) -> bool {
     world_state.time += TIME_PER_TICK;
     world_state.objects[0].rotate_y(TIME_PER_TICK);
     world_state.objects[0].rotate_x(TIME_PER_TICK);
+
     true // frame dirty
 }
 
 fn render<T: Screen>(
     renderer: &mut Renderer<T>,
     world_state: &WorldState
-) {
-    // Render image.
+)
+    -> Result<(), Box<error::Error>>
+{
     renderer.clear();
     for object in &world_state.objects {
         object.render(renderer);
     }
-    main_try!(renderer.display());
+    try!(renderer.display());
+    Ok(())
 }
 
 fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
@@ -117,7 +122,7 @@ fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
 
     objects.push({
         let size = 3.;
-        load_object_from_file("res/cube.obj")?
+        Object::from_file("res/cube.obj")?
             .scaled(size, size, size)
             .translated(pt![0., 0., -20.])
             .rotated_x(f64::consts::PI / 4.)

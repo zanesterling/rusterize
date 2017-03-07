@@ -2,7 +2,6 @@ use std::error;
 use std::fs;
 use std::io;
 use std::io::BufRead;
-use std::path::Path;
 
 use renderer::Renderer;
 use screen::Screen;
@@ -27,7 +26,7 @@ impl Object {
         }
     }
 
-    pub fn from_file(filename: &Path) -> Result<Object, Box<error::Error>> {
+    pub fn from_file(filename: &str) -> Result<Object, Box<error::Error>> {
         let f = try!(fs::File::open(filename));
         let reader = io::BufReader::new(f);
         let mut lines = reader.lines();

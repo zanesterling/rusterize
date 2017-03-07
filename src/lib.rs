@@ -24,17 +24,19 @@ const NANOS_PER_SECOND: u32 = 1_000_000_000;
 
 type InitFunc<WorldState, S: screen::Screen> =
     fn (&mut Renderer<S>) -> Result<WorldState, Box<error::Error>>;
-type ParseEventFunc         = fn (&mut LoopState, SdlEvent);
-type UpdateFunc<WorldState> = fn (&mut LoopState, &mut WorldState) -> bool;
+
+type ParseEventFunc<WorldState> =
+    fn (&mut LoopState, &mut WorldState, SdlEvent);
+type UpdateFunc<WorldState> = fn (&mut WorldState) -> bool;
 type RenderFunc<WorldState, S: screen::Screen> =
-    fn (&mut Renderer<S>, &WorldState);
+    fn (&mut Renderer<S>, &WorldState) -> Result<(), Box<error::Error>>;
 
 pub fn main_loop<'a, WorldState>
 (
     screen_config: ScreenConfig,
     init: InitFunc<WorldState, screen::GraphicalScreen<'a>>,
 
-    parse_event: ParseEventFunc,
+    parse_event: ParseEventFunc<WorldState>,
     update:      UpdateFunc<WorldState>,
     render:      RenderFunc<WorldState, screen::GraphicalScreen<'a>>,
 )
@@ -62,12 +64,12 @@ pub fn main_loop<'a, WorldState>
 
         // Update and render frame.
         for event in event_pump.poll_iter() {
-            parse_event(&mut loop_state, event);
+            parse_event(&mut loop_state, &mut world_state, event);
         }
         if loop_state.should_tick() {
             loop_state.step = false;
-            let frame_dirty = update(&mut loop_state, &mut world_state);
-            if  frame_dirty { render(&mut renderer, &world_state); }
+            let frame_dirty = update(&mut world_state);
+            if  frame_dirty { try!(render(&mut renderer, &world_state)); }
         }
 
         // Sleep until end of frame.
