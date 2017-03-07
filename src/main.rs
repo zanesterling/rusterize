@@ -62,7 +62,20 @@ fn init<S: Screen>(renderer: &mut Renderer<S>)
     renderer.set_light_pos(pt![10., 0., 10.]);
 
     // State variables.
-    let objects: Vec<Object> = try!(init_objects());
+    let objects: Vec<Object> = {
+        let mut objects = Vec::new();
+
+        objects.push({
+            let size = 3.;
+            Object::from_file("res/cube.obj")?
+                .scaled(size, size, size)
+                .translated(pt![0., 0., -20.])
+                .rotated_x(f64::consts::PI / 4.)
+        });
+
+        objects
+    };
+
     Ok(
         WorldState {
             time: 0.,
@@ -115,18 +128,4 @@ fn render<T: Screen>(
     }
     try!(renderer.display());
     Ok(())
-}
-
-fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
-    let mut objects = Vec::new();
-
-    objects.push({
-        let size = 3.;
-        Object::from_file("res/cube.obj")?
-            .scaled(size, size, size)
-            .translated(pt![0., 0., -20.])
-            .rotated_x(f64::consts::PI / 4.)
-    });
-
-    Ok(objects)
 }
