@@ -56,78 +56,109 @@ fn main() {
         * Transform::scale(screen_scale, screen_scale, 1.)
         * Transform::perspective()
     });
-
-    // Set up scene.
-    let mut objects: Vec<Object> = main_try!(init_objects());
     renderer.set_light_pos(pt![10., 0., 10.]);
 
     // State variables.
-    let mut paused = false;
-    let mut step = true;
-    let mut frame_dirty = true;
-    let mut time = 0.;
+    let mut world_state = {
+        let objects: Vec<Object> = main_try!(init_objects());
+        WorldState {
+            time: 0.,
+            objects: objects,
+        }
+    };
 
     // Main loop.
-    'main_loop: loop {
+    let mut loop_state = LoopState::new();
+    while loop_state.running {
         // Time frame length.
         let frame_start = Instant::now();
 
-        // Parse events.
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. } |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    break 'main_loop;
-                },
-
-                Event::KeyDown { keycode: Some(code), .. } => {
-                    match code {
-                        Keycode::P      => paused = !paused,
-                        Keycode::Space  => step = true,
-                        _ => {}
-                    }
-                },
-
-                _ => {},
+        {
+            // Update and render frame.
+            for event in event_pump.poll_iter() { parse_event(&mut loop_state, event); }
+            if loop_state.should_tick() {
+                loop_state.step = false;
+                let frame_dirty = update(&mut loop_state, &mut world_state);
+                if  frame_dirty { render(&mut renderer, &world_state); }
             }
         }
 
-        if step || !paused {
-            step = false;
-
-            // Update stuff.
-            time += TIME_PER_TICK;
-            objects[0].rotate_y(TIME_PER_TICK);
-            objects[0].rotate_x(TIME_PER_TICK);
-            frame_dirty = true;
-
-            // Draw stuff.
-            if frame_dirty {
-                // Render image.
-                renderer.clear();
-                for object in &objects {
-                    object.render(&mut renderer);
-                }
-                main_try!(renderer.display());
-
-                frame_dirty = false;
-            }
-        }
-
-        // Sleep until end-of-frame.
-        let frame_duration = Instant::now() - frame_start;
-        let fps = NANOS_PER_SECOND / frame_duration.subsec_nanos();
-        if fps < TARGET_FPS { println!("slowed down!"); }
-        let max_sleep = Duration::new(0, FRAME_LEN_NANOS);
-        if max_sleep > frame_duration {
-            thread::sleep(max_sleep - frame_duration);
+        // Sleep until end of frame.
+        let frame_len = Instant::now() - frame_start;
+        let target_frame_len = Duration::new(0, FRAME_LEN_NANOS);
+        if frame_len < target_frame_len {
+            thread::sleep(target_frame_len - frame_len);
+        } else {
+            println!("slowed down!");
         }
     }
 }
 
-fn error(err: &error::Error) {
-    println!("error: {}", err);
-    process::exit(-1);
+struct LoopState {
+    pub running: bool,
+    pub paused: bool,
+    pub step: bool,
+}
+
+impl LoopState {
+    pub fn new() -> LoopState {
+        LoopState {
+            running: true,
+            paused: false,
+            step:   false,
+        }
+    }
+
+    pub fn should_tick(&self) -> bool {
+        self.paused || self.step
+    }
+}
+
+
+struct WorldState {
+    time: f64,
+    objects: Vec<Object>
+}
+
+
+fn parse_event(loop_state: &mut LoopState, event: Event) {
+    match event {
+        Event::Quit { .. } |
+        Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+            loop_state.running = false;
+        },
+
+        Event::KeyDown { keycode: Some(code), .. } => {
+            match code {
+                Keycode::P      => loop_state.paused = !loop_state.paused,
+                Keycode::Space  => loop_state.step   = true,
+                _ => {}
+            }
+        },
+
+        _ => {},
+    }
+}
+
+// Returns true if the frame is made dirty, else false.
+fn update(_: &mut LoopState, world_state: &mut WorldState) -> bool {
+    // Update stuff.
+    world_state.time += TIME_PER_TICK;
+    world_state.objects[0].rotate_y(TIME_PER_TICK);
+    world_state.objects[0].rotate_x(TIME_PER_TICK);
+    true // frame dirty
+}
+
+fn render<T: rusterize::screen::Screen>(
+    renderer: &mut Renderer<T>,
+    world_state: &WorldState
+) {
+    // Render image.
+    renderer.clear();
+    for object in &world_state.objects {
+        object.render(renderer);
+    }
+    main_try!(renderer.display());
 }
 
 fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
@@ -142,6 +173,12 @@ fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
     });
 
     Ok(objects)
+}
+
+
+fn error(err: &error::Error) {
+    println!("error: {}", err);
+    process::exit(-1);
 }
 
 fn load_object_from_file(filename: &str)
