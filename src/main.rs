@@ -15,23 +15,20 @@ use std::f64;
 use std::path::Path;
 use std::process;
 
-mod consts;
-use consts::*;
 
-macro_rules! main_try {
-    ($x:expr) => {{
-        let var = $x;
-        if let Err(e) = var {
-            error(&*e);
-            return;
-        }
-        var.unwrap()
-    }}
+pub const SCREEN_WIDTH:  u32 = 800;
+pub const SCREEN_HEIGHT: u32 = 600;
+pub const TARGET_FPS:    u32 = 60;
+pub const TIME_PER_TICK: f64 = 1. / (TARGET_FPS as f64);
+
+struct WorldState {
+    time: f64,
+    objects: Vec<Object>
 }
 
 
 fn main() {
-    main_try!(rusterize::main_loop(
+    let result = rusterize::main_loop(
         rusterize::ScreenConfig {
             title:      "rusterize",
             width:      SCREEN_WIDTH,
@@ -42,12 +39,12 @@ fn main() {
         parse_event,
         update,
         render
-    ));
-}
+    );
 
-struct WorldState {
-    time: f64,
-    objects: Vec<Object>
+    if let Err(e) = result {
+        println!("error: {}", e);
+        process::exit(-1);
+    }
 }
 
 fn init<S: Screen>(renderer: &mut Renderer<S>)
@@ -103,7 +100,7 @@ fn update(_: &mut rusterize::LoopState, world_state: &mut WorldState) -> bool {
     true // frame dirty
 }
 
-fn render<T: rusterize::screen::Screen>(
+fn render<T: Screen>(
     renderer: &mut Renderer<T>,
     world_state: &WorldState
 ) {
@@ -120,22 +117,11 @@ fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
 
     objects.push({
         let size = 3.;
-        load_object_from_file("cube.obj")?
+        load_object_from_file("res/cube.obj")?
             .scaled(size, size, size)
             .translated(pt![0., 0., -20.])
             .rotated_x(f64::consts::PI / 4.)
     });
 
     Ok(objects)
-}
-
-fn load_object_from_file(filename: &str)
-    -> Result<Object, Box<error::Error>>
-{
-    Object::from_file(&Path::new(RES_DIR_PATH).join(filename))
-}
-
-fn error(err: &error::Error) {
-    println!("error: {}", err);
-    process::exit(-1);
 }
