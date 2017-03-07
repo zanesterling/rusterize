@@ -6,7 +6,7 @@ use sdl2::keyboard::Keycode;
 
 use rusterize::object::Object;
 use rusterize::renderer::Renderer;
-use rusterize::screen;
+use rusterize::screen::Screen;
 use rusterize::types::*;
 
 use std::cmp::min;
@@ -14,9 +14,6 @@ use std::error;
 use std::f64;
 use std::path::Path;
 use std::process;
-use std::thread;
-use std::time::Duration;
-use std::time::Instant;
 
 mod consts;
 use consts::*;
@@ -34,18 +31,28 @@ macro_rules! main_try {
 
 
 fn main() {
-    // Initialize screen.
-    let sdl_context = sdl2::init().unwrap();
-    let screen = main_try!(screen::GraphicalScreen::new(
-        "softraster",
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT,
-        &sdl_context,
+    main_try!(rusterize::main_loop(
+        rusterize::ScreenConfig {
+            title:      "rusterize",
+            width:      SCREEN_WIDTH,
+            height:     SCREEN_HEIGHT,
+            target_fps: TARGET_FPS,
+        },
+        init,
+        parse_event,
+        update,
+        render
     ));
-    let mut renderer = Renderer::new(screen);
-    let mut event_pump = sdl_context.event_pump().unwrap();
+}
 
+struct WorldState {
+    time: f64,
+    objects: Vec<Object>
+}
 
+fn init<S: Screen>(renderer: &mut Renderer<S>)
+    -> Result<WorldState, Box<error::Error>>
+{
     // Set perspective transform.
     renderer.set_transform({
         let screen_scale = (min(SCREEN_WIDTH, SCREEN_HEIGHT) / 2) as f64;
@@ -59,69 +66,16 @@ fn main() {
     renderer.set_light_pos(pt![10., 0., 10.]);
 
     // State variables.
-    let mut world_state = {
-        let objects: Vec<Object> = main_try!(init_objects());
+    let objects: Vec<Object> = try!(init_objects());
+    Ok(
         WorldState {
             time: 0.,
             objects: objects,
         }
-    };
-
-    // Main loop.
-    let mut loop_state = LoopState::new();
-    while loop_state.running {
-        // Time frame length.
-        let frame_start = Instant::now();
-
-        {
-            // Update and render frame.
-            for event in event_pump.poll_iter() { parse_event(&mut loop_state, event); }
-            if loop_state.should_tick() {
-                loop_state.step = false;
-                let frame_dirty = update(&mut loop_state, &mut world_state);
-                if  frame_dirty { render(&mut renderer, &world_state); }
-            }
-        }
-
-        // Sleep until end of frame.
-        let frame_len = Instant::now() - frame_start;
-        let target_frame_len = Duration::new(0, FRAME_LEN_NANOS);
-        if frame_len < target_frame_len {
-            thread::sleep(target_frame_len - frame_len);
-        } else {
-            println!("slowed down!");
-        }
-    }
+    )
 }
 
-struct LoopState {
-    pub running: bool,
-    pub paused: bool,
-    pub step: bool,
-}
-
-impl LoopState {
-    pub fn new() -> LoopState {
-        LoopState {
-            running: true,
-            paused: false,
-            step:   false,
-        }
-    }
-
-    pub fn should_tick(&self) -> bool {
-        self.paused || self.step
-    }
-}
-
-
-struct WorldState {
-    time: f64,
-    objects: Vec<Object>
-}
-
-
-fn parse_event(loop_state: &mut LoopState, event: Event) {
+fn parse_event(loop_state: &mut rusterize::LoopState, event: Event) {
     match event {
         Event::Quit { .. } |
         Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
@@ -141,7 +95,7 @@ fn parse_event(loop_state: &mut LoopState, event: Event) {
 }
 
 // Returns true if the frame is made dirty, else false.
-fn update(_: &mut LoopState, world_state: &mut WorldState) -> bool {
+fn update(_: &mut rusterize::LoopState, world_state: &mut WorldState) -> bool {
     // Update stuff.
     world_state.time += TIME_PER_TICK;
     world_state.objects[0].rotate_y(TIME_PER_TICK);
@@ -175,14 +129,13 @@ fn init_objects() -> Result<Vec<Object>, Box<error::Error>> {
     Ok(objects)
 }
 
-
-fn error(err: &error::Error) {
-    println!("error: {}", err);
-    process::exit(-1);
-}
-
 fn load_object_from_file(filename: &str)
     -> Result<Object, Box<error::Error>>
 {
     Object::from_file(&Path::new(RES_DIR_PATH).join(filename))
+}
+
+fn error(err: &error::Error) {
+    println!("error: {}", err);
+    process::exit(-1);
 }
