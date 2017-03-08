@@ -22,13 +22,13 @@ use screen::GraphicalScreen;
 
 const NANOS_PER_SECOND: u32 = 1_000_000_000;
 
-type InitFunc<WorldState, S: screen::Screen> =
+type InitFunc<WorldState, S> =
     fn (&mut Renderer<S>) -> Result<WorldState, Box<error::Error>>;
 
 type ParseEventFunc<WorldState> =
     fn (&mut LoopState, &mut WorldState, SdlEvent);
 type UpdateFunc<WorldState> = fn (&mut WorldState) -> bool;
-type RenderFunc<WorldState, S: screen::Screen> =
+type RenderFunc<WorldState, S> =
     fn (&mut Renderer<S>, &WorldState) -> Result<(), Box<error::Error>>;
 
 pub fn main_loop<'a, WorldState>
