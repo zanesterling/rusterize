@@ -270,6 +270,5 @@ impl<S> Renderer<S>
 
 
     pub fn set_color(&mut self, color: Pixel) { self.color = color; }
-
     pub fn set_light_pos(&mut self, pos: Point) { self.light = pos; }
 }

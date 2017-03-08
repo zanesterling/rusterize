@@ -108,7 +108,7 @@ impl LoopState {
     }
 
     pub fn should_tick(&self) -> bool {
-        self.paused || self.step
+        !self.paused || self.step
     }
 }
 
