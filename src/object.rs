@@ -8,6 +8,7 @@ use screen::Screen;
 use types::*;
 
 // FIXME: Add transformation cacheing.
+#[derive(Clone)]
 pub struct Object {
     translation: Transform,
     rotation:    Transform,

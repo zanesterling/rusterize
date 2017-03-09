@@ -184,6 +184,17 @@ impl ops::Mul<Transform> for Point {
     }
 }
 
+impl ops::Neg for Point {
+    type Output = Point;
+    fn neg(self) -> Point {
+        Point {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Transform {
     data: [[f64; DIM + 1]; DIM + 1]
