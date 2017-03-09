@@ -5,6 +5,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
 use rusterize::object::Object;
+use rusterize::renderer::LightingMode;
 use rusterize::renderer::Renderer;
 use rusterize::screen::Screen;
 use rusterize::types::*;
@@ -59,7 +60,10 @@ fn init<S: Screen>(renderer: &mut Renderer<S>)
         * Transform::scale(screen_scale, screen_scale, 1.)
         * Transform::perspective()
     });
+
+    // Set up lighting.
     renderer.set_light_pos(pt![10., 0., 10.]);
+    renderer.set_lighting_mode(LightingMode::FlatShading);
 
     // State variables.
     let objects: Vec<Object> = {

@@ -20,6 +20,11 @@ macro_rules! do_with_color {
 }
 
 
+pub enum LightingMode {
+    NoShading,
+    FlatShading,
+}
+
 pub struct Renderer<S>
     where S: Screen
 {
@@ -30,6 +35,7 @@ pub struct Renderer<S>
     color: Pixel,
 
     light: Point,
+    lighting_mode: LightingMode,
 }
 
 #[allow(dead_code)]
@@ -48,6 +54,7 @@ impl<S> Renderer<S>
             color: pixel::WHITE,
 
             light: pt![0., 0., 0.],
+            lighting_mode: LightingMode::NoShading,
         }
     }
 
@@ -153,16 +160,7 @@ impl<S> Renderer<S>
 
         // Compute color of triangle based on light.
         let old_color = self.color;
-        self.color = {
-            let light_dir = (self.light - centroid).normalized();
-            let light_mag = light_dir.dot(t.normal()).max(0.);
-            let (r, g, b) = self.color;
-            (
-                (r as f64 * light_mag) as u8,
-                (g as f64 * light_mag) as u8,
-                (b as f64 * light_mag) as u8
-            )
-        };
+        self.color = self.light_triangle(t, old_color);
 
         const EPSILON: f64 = 1.;
         if middle.y - top.y < EPSILON {
@@ -185,6 +183,23 @@ impl<S> Renderer<S>
         }
 
         self.color = old_color;
+    }
+
+    fn light_triangle(&self, t: Triangle, color: Pixel) -> Pixel {
+        match self.lighting_mode {
+            LightingMode::NoShading => color,
+            LightingMode::FlatShading => {
+                let centroid = (t.p1 + t.p2 + t.p3) * (1. / 3.);
+                let light_dir = (self.light - centroid).normalized();
+                let light_mag = light_dir.dot(t.normal()).max(0.);
+                let (r, g, b) = color;
+                (
+                    (r as f64 * light_mag) as u8,
+                    (g as f64 * light_mag) as u8,
+                    (b as f64 * light_mag) as u8
+                )
+            },
+        }
     }
 
     fn fill_bottom_flat_triangle(&mut self, t: Triangle) {
@@ -272,4 +287,7 @@ impl<S> Renderer<S>
 
     pub fn set_color(&mut self, color: Pixel) { self.color = color; }
     pub fn set_light_pos(&mut self, pos: Point) { self.light = pos; }
+    pub fn set_lighting_mode(&mut self, lighting_mode: LightingMode) {
+        self.lighting_mode = lighting_mode;
+    }
 }
