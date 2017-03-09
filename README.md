@@ -6,4 +6,4 @@ A software renderer built from per-pixel access
 $ cargo run --release
 ```
 
-![a gif of a spinning cube](https://github.com/shriken/rusterize/raw/master/gifs/cube-demo.gif "A spinning cube")
+![a gif of a spinning cube](https://github.com/zanesterling/rusterize/raw/master/gifs/cube-demo.gif "A spinning cube")
