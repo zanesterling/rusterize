@@ -60,12 +60,11 @@ impl Texture {
         z2: Coord,
         color: Pixel
     ) {
-        if y  < 0 || y  as Dimension >= self.h { return }
-        if x2 < 0 || x1 as Dimension >= self.w { return }
+        if y  < 0 || (           y as Dimension >= self.h) { return }
+        if x2 < 0 || (x1 > 0 && x1 as Dimension >= self.w) { return }
 
         let start = clamp(x1, 0, (self.w - 1) as PixCoord);
         let end   = clamp(x2, 0, (self.w - 1) as PixCoord);
-        let y     = y;
 
         if x2 <= x1 { return }
         for x in start .. end + 1 {

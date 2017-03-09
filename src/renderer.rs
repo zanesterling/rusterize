@@ -192,7 +192,8 @@ impl<S> Renderer<S>
         if left.x > right.x { mem::swap(&mut left, &mut right) }
 
         for y in top.y as PixCoord .. left.y as PixCoord {
-            let t       = (y - top.y as PixCoord) as Coord / (left.y - top.y);
+            let t = (y - top.y as PixCoord) as Coord / (left.y - top.y);
+
             let z_left  = top.z + t * (left.z  - top.z);
             let z_right = top.z + t * (right.z - top.z);
 
