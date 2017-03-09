@@ -143,6 +143,12 @@ impl<S> Renderer<S>
         self.transform = old_transform;
     }
 
+    pub fn draw_triangle(&mut self, t: Triangle) {
+        self.draw_line(t.p1, t.p2);
+        self.draw_line(t.p2, t.p3);
+        self.draw_line(t.p3, t.p1);
+    }
+
     pub fn fill_triangle(&mut self, t: Triangle) {
         // Backface culling.
         let centroid = (t.p1 + t.p2 + t.p3) * (1. / 3.);
