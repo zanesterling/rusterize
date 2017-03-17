@@ -79,6 +79,17 @@ impl Object {
         }
     }
 
+    pub fn render_with_transform<S: Screen>(
+        &self,
+        renderer: &mut Renderer<S>,
+        transform: Transform,
+    ) {
+        let camera_transform = transform * self.world_transform();
+        for t in &self.triangles {
+            renderer.fill_triangle(*t * camera_transform);
+        }
+    }
+
     fn world_transform(&self) -> Transform {
         self.translation * self.rotation * self.scaling
     }
